@@ -17,7 +17,7 @@ interface ProfileData  {
 }
 
 interface CustomTag {
-    color: 'dark' | 'red' | 'yellow' | 'green' | 'indigo' | 'purple' | 'pink' | 'blue' | 'primary' | 'none';
+    //color: 'dark' | 'red' | 'yellow' | 'green' | 'indigo' | 'purple' | 'pink' | 'blue' | 'primary' | 'none';
     name: string;
     url: string;
 }

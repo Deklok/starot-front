@@ -1,7 +1,22 @@
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = ({ params }) => {
+export const load: PageServerLoad = async ({ params, platform }) => {
+
+    if (!platform) {
+        console.log('error loading platform');
+        throw new Error('no platform loaded');
+    }
+    
+    const DB = platform.env.DB;
+    try {
+        const result = await DB.prepare(`SELECT * FROM item`).all();
+        const finalResults = result.results
+        console.log(finalResults);
+    } catch(err: any) {
+        console.log(err);
+    }
+
     const slug: string = params.slug;
 
     const images = [];

@@ -59,7 +59,7 @@ title={selectedImage.title} bind:open={showModal} autoclose outsideclose>
             {/each}
         </div>
         <div class="py-12">
-            <div class="cursor-pointer" on:click={openModal}>
+            <div class="cursor-pointer" onclick={openModal}>
                 <Carousel imgClass="full-screen-viewable" class="my-3" {images} {forward} let:Indicators let:Controls bind:index>
                     <Controls class="ignore-this" />
                     <Indicators class="ignore-this" />

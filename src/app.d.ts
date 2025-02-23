@@ -4,7 +4,9 @@
 // for information about these interfaces
 declare namespace App {
 	// interface Locals {}
-	// interface Platform {}
+	interface Platform {
+		env: Env
+	}
 	// interface Session {}
 	// interface Stuff {}
 }

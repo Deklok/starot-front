@@ -7,8 +7,6 @@
 	const folders = dataLoaded.folders;
     const images = dataLoaded.images;
     const characters = dataLoaded.characters;
-	console.log(dataLoaded);
-	console.log(characters);
 	$: slug = $page.params.slug;
 </script>
 
