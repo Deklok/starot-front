@@ -1,6 +1,6 @@
 <script lang="ts">
-	import RichEditor from '$lib/RichEditor.svelte';
-	import ImageFileDrop from '$lib/ImageFileDrop.svelte';
+	import RichEditor from '$lib/components/RichEditor.svelte';
+	import ImageFileDrop from '$lib/components/ImageFileDrop.svelte';
 	import {
 		Badge,
 		Button,
@@ -12,10 +12,10 @@
 		TableBodyRow
 	} from 'flowbite-svelte';
 	import { CircleMinusSolid, CirclePlusSolid, MinusOutline } from 'flowbite-svelte-icons';
-	import DraggableGallery from '$lib/DraggableGallery.svelte';
-	import Notification from '$lib/Notification.svelte';
+	import DraggableGallery from '$lib/components/DraggableGallery.svelte';
+	import Notification from '$lib/components/Notification.svelte';
 
-	let sections: CharacterSection[] = $state([]);
+	let sections: SimpleEntrySection[] = $state([]);
 	let characterName = $state(``);
 
 	let confirmDelete = $state(false);

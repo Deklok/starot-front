@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { tryCatch } from '$lib/utils/trycatch';
 	import { onMount, tick } from 'svelte';
 	import { v4 as uuidv4 } from 'uuid';
 
@@ -24,9 +25,9 @@
 	onMount(async () => {
 		await tick();
 		if (editorElement) {
-			try {
-				await loadQuill(editorElement);
-			} catch (error) {
+			const { error } = await tryCatch(loadQuill(editorElement));
+			
+			if (error) {
 				console.error('Failed to load Quill:', error);
 			}
 		}

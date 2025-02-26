@@ -1,9 +1,8 @@
 <script lang="ts">
-    import { page } from '$app/stores';
     import CustomSideBar from '$lib/components/CustomSideBar.svelte';
 	import { Card, Carousel, Modal, Thumbnails } from 'flowbite-svelte';
 
-    const dataLoaded = $page.data as EntryViewData;
+    export let dataLoaded: EntryViewData;
     const sections = dataLoaded.sections;
     const name = dataLoaded.name;
     const tags = dataLoaded.tags;
@@ -20,8 +19,6 @@
     let forward = true;
     let showModal = false;
     let selectedImage: any = null;
-
-    $: slug = $page.params.slug;
 
     function openModal(event: any) {
         if (event.target.classList.contains('full-screen-viewable')) {
@@ -42,11 +39,8 @@ title={selectedImage.title} bind:open={showModal} autoclose outsideclose>
 </Modal>
 {/if}
 
-<div class="flex">
-    <aside class="hidden md:flex md:w-1/5">
-		<CustomSideBar />
-	</aside>
-	<main class="w-full md:w-4/5 m-4 p-4 bg-slate-700 flex flex-wrap justify-center">
+<div class="flex w-full">
+	<main class="w-full flex flex-wrap justify-center">
         <div class="prose lg:prose-xl text-white">
             <h1 class="text-4xl font-bold mb-4">{name}</h1>
             <Card img={profileImage} class="float-right m-6">

@@ -2,4 +2,6 @@
 
 interface Env {
 	DB: D1Database;
+	PASSPHRASE: string;
+	BUCKET: R2Bucket;
 }

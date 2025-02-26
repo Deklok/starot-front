@@ -16,7 +16,13 @@
       "database_name": "starot",
       "database_id": "91b37b8a-911c-43e9-9f88-1a71ddeb9007"
     }
-  ]
+  ],
+  "r2_buckets": [
+      {
+        "binding": "BUCKET",
+        "bucket_name": "starot"
+      }
+    ]
   /**
    * Smart Placement
    * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

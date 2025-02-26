@@ -9,11 +9,10 @@ interface LinkItem {
     url: string;
 }
 
-interface ProfileData  {
-    username: string;
+interface FolderData  {
     folders: LinkItem[];
     images: PreviewData[];
-    characters: PreviewData[];
+    entries: PreviewData[];
 }
 
 interface CustomTag {
@@ -28,18 +27,18 @@ interface ImageResponseData {
     tags: CustomTag[];
 }
 
-interface CharacterSection {
+interface SimpleEntrySection {
     title: string;
     content: string;
 }
 
-interface CharacterProfileData {
+interface EntryViewData {
     name: string;
     description: string;
     tags: CustomTag[];
     profileImage: string;
     images: ImageResponseData[];
-    sections: CharacterSection[];
+    sections: SimpleEntrySection[];
 }
 
 interface SimpleItem {

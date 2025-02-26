@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { Card } from 'flowbite-svelte';
-	import CustomSideBar from '$lib/CustomSideBar.svelte';
+	import CustomSideBar from '$lib/components/CustomSideBar.svelte';
 
-	const dataLoaded = $page.data as ProfileData;
+	const dataLoaded = $page.data as FolderData;
 	const folders = dataLoaded.folders;
     const images = dataLoaded.images;
     const characters = dataLoaded.characters;
@@ -66,11 +66,3 @@
         </div>
 	</div>
 </div>
-
-<style>
-	hr {
-		border: none;
-		height: 5px;
-		border-radius: 5px;
-	}
-</style>

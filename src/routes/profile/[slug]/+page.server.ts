@@ -1,22 +1,6 @@
-import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ params, platform }) => {
-
-    if (!platform) {
-        console.log('error loading platform');
-        throw new Error('no platform loaded');
-    }
-    
-    const DB = platform.env.DB;
-    try {
-        const result = await DB.prepare(`SELECT * FROM item`).all();
-        const finalResults = result.results
-        console.log(finalResults);
-    } catch(err: any) {
-        console.log(err);
-    }
-
+export const load: PageServerLoad = async ({ params, platform, cookies }) => {
     const slug: string = params.slug;
 
     const images = [];
@@ -42,7 +26,7 @@ export const load: PageServerLoad = async ({ params, platform }) => {
         folders.push({ name: 'Random stuff', url: '/someid'});
     }
     
-    const response: ProfileData = {
+    const response: FolderData = {
         username: slug,
         folders,
         images,
