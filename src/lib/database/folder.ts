@@ -1,4 +1,5 @@
 import { formatStringForURL } from "$lib/utils/formatUrl";
+import { transformToCamelCase } from "$lib/utils/underToCamelCase";
 import type { D1Database } from "@cloudflare/workers-types";
 
 export async function createRootFolder(
@@ -16,4 +17,42 @@ export async function createRootFolder(
     .run();
 
     return uniqueName;
+}
+
+export async function getFolder(
+    db: D1Database,
+    worldUniqueName: string,
+    folderUniqueName: string
+): Promise<Item> {
+    const result = await db.prepare(`
+        SELECT * FROM item
+        INNER JOIN world on world.id = item.world_id
+        WHERE item.unique_name = ? AND
+        world.unique_name = ? AND
+        item.type = 'folder'
+    `)
+        .bind(folderUniqueName, worldUniqueName)
+        .first();
+
+    if (!result) {
+        throw new Error('World not found with uniqueName');
+    }
+
+    return transformToCamelCase<Item>(result);
+}
+
+export async function getFolderItems(
+    db: D1Database,
+    id: number
+): Promise<Item[]> {
+    const results = await db.prepare(`
+        SELECT * FROM item 
+        WHERE 
+        world_id = ? AND 
+        parent_id IS NOT NULL
+    `).bind(id).all();
+
+    const items = results.results;
+
+    return items.map((item) => transformToCamelCase<Item>(item));
 }

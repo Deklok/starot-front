@@ -3,10 +3,22 @@
 	import FloatingActionButton from './FloatingActionButton.svelte';
 	import { page } from '$app/state';
 	import { isLoading } from '$lib/stores/loading';	
+	import TagEditor from './TagEditor.svelte';
+	import ImageFileDrop from './ImageFileDrop.svelte';
 
 	const { isLoggedIn, folders, images, entries } = page.data;
 
 	let newFolderModal = $state(false);
+	let newImageModal = $state(false);
+	let tags = $state([]);
+	
+	function handleKeyDown(event: any) {
+		// Check if the key pressed is Enter
+		if (event.key === 'Enter') {
+		// Prevent the default form submission
+		event.preventDefault();
+		}
+	}
 	
 	function handleOptionSelect(optionId: string) {
 		const selectedOption = optionId;
@@ -22,13 +34,13 @@
 			break;
 		case 'image':
 			// Handle image upload
-			console.log('Adding a new image');
+			newImageModal = true;
 			break;
 		}
 	}
 </script>
 
-<div class="flex">
+<div class="flex" data-sveltekit-preload-data="false">
 	<div class="w-full m-4 p-4 bg-slate-700">
 		<div class="flex flex-wrap justify-around">
 			{#if folders.length < 1}
@@ -89,6 +101,7 @@
         </div>
 	</div>
 </div>
+
 <Modal classBody="flex justify-center"
 title="Nuevo folder" bind:open={newFolderModal} outsideclose>
 	<form method="POST" action="?/newFolder"
@@ -97,6 +110,29 @@ title="Nuevo folder" bind:open={newFolderModal} outsideclose>
 		id="newFolderName" name="newFolderName" type="text">
 			Nombre
 		</FloatingLabelInput>
+		<div class="mt-6">
+			<TagEditor bind:tags={tags}></TagEditor>
+		</div>
+		<Button disabled={$isLoading} type="submit"
+		class="my-5 w-[70%] self-center" 
+		color="green">Crear folder</Button>
+	</form>
+</Modal>
+
+<Modal classBody="flex justify-center"
+title="Nueva imagen" bind:open={newImageModal} outsideclose>
+	<form method="POST" action="?/newImage"
+	class="flex flex-col self-center justify-center w-[90%]">
+		<FloatingLabelInput class="mb-4 self-center"
+		id="newImageName" name="newImageName" type="text">
+			Nombre
+		</FloatingLabelInput>
+		<div class="my-4">
+			<ImageFileDrop></ImageFileDrop>
+		</div>
+		<div class="mt-6">
+			<TagEditor bind:tags={tags}></TagEditor>
+		</div>
 		<Button disabled={$isLoading} type="submit"
 		class="my-5 w-[70%] self-center" 
 		color="green">Crear folder</Button>

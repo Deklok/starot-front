@@ -1,6 +1,6 @@
 import { getWorldByUniqueName, getWorldItems } from "$lib/database/world";
 import type { Actions } from "@sveltejs/kit";
-import type { PageServerLoad } from "../$types";
+import type { PageServerLoad } from "./$types";
 import { createRootFolder } from "$lib/database/folder";
 
 
@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ params, url, platform, cookies }) =
     
     // @ts-ignore
     const worldUniqueName: string = params.world; 
-    console.log('current world ', worldUniqueName);
+    console.log('current world', worldUniqueName);
 
     if (!platform) {
         throw new Error('no platform loaded');

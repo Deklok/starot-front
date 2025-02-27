@@ -11,12 +11,12 @@ export const load: PageServerLoad = async ({ params, platform, cookies }) => {
         images.push({ name: 'Some other', url: '/image/urusaipay', preview: '/payalt.png' });
     }
 
-    const characters = [];
+    const entries = [];
     for (let i = 0; i < 10; i++) {
-        characters.push({ name: 'Pay', url: '/character/pay', preview: '/pay.png' });
+        entries.push({ name: 'Pay', url: '/character/pay', preview: '/pay.png' });
     }
     for (let i = 0; i < 5; i++) {
-        characters.push({ name: 'Nadira', url: '/character/nadira', preview: '/nadira.jpeg' });
+        entries.push({ name: 'Nadira', url: '/character/nadira', preview: '/nadira.jpeg' });
     }
 
     const folders = [];
@@ -27,10 +27,9 @@ export const load: PageServerLoad = async ({ params, platform, cookies }) => {
     }
     
     const response: FolderData = {
-        username: slug,
         folders,
         images,
-        characters
+        entries
     }
     return response;
 }

@@ -1,40 +1,23 @@
-import type { PageServerLoad } from "../../$types";
+import { getFolder, getFolderItems } from "$lib/database/folder";
+import type { PageServerLoad } from "./$types";
 
+var currentItem: Item | null = null;
 
 export const load: PageServerLoad = async ({ params, url, platform, cookies }) => {
-    
+   
     // @ts-ignore
-    const slug: string = params.world; 
-    console.log(slug);
+    const worldUniqueName: string = params.world; 
+    console.log('current world', worldUniqueName);
+    const itemUniqueName: string = params.item; 
 
-    const images = [];
-    for (let i = 0; i < 5; i++) {
-        images.push({ name: 'Some piece', url: '/image/pay', preview: '/pay.png' });
-    }
-    for (let i = 0; i < 5; i++) {
-        images.push({ name: 'Some other', url: '/image/urusaipay', preview: '/payalt.png' });
+    if (!platform) {
+        throw new Error('no platform loaded');
     }
 
-    const characters = [];
-    for (let i = 0; i < 10; i++) {
-        characters.push({ name: 'Pay', url: '/character/pay', preview: '/pay.png' });
-    }
-    for (let i = 0; i < 5; i++) {
-        characters.push({ name: 'Nadira', url: '/character/nadira', preview: '/nadira.jpeg' });
-    }
+    const DB = platform.env.DB;
 
-    const folders = [];
-    for (let i = 0; i < 2; i++) {
-        folders.push({ name: 'LGBT Folder', url: '/someid'});
-        folders.push({ name: 'Furry folder', url: '/someid'});
-        folders.push({ name: 'Random stuff', url: '/someid'});
-    }
-    
-    const folderData: FolderData = {
-        folders,
-        images,
-        characters
-    }
+    console.log(url.searchParams);
+    const typeItem = url.searchParams.get('type') || 'entry';
 
     const imageData: ImageResponseData = {
         name: 'My coso favorito de pay la amo joder',
@@ -48,7 +31,7 @@ export const load: PageServerLoad = async ({ params, url, platform, cookies }) =
     const entryData: EntryViewData = {
         name: 'Pay',
         tags: [],
-        description: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.`,
+        profileSections: [],
         profileImage: '/pay.png',
         images: [
             { name: 'Pay pay', imageUrl: '/pay.png', tags:[] },
@@ -64,10 +47,54 @@ export const load: PageServerLoad = async ({ params, url, platform, cookies }) =
     };
 
     let finalResponse;
-    console.log(url.searchParams);
-    const typeItem = url.searchParams.get('type') || 'entry';
     switch(typeItem) {
         case 'folder':
+            const currentFolder = await getFolder(DB, worldUniqueName, itemUniqueName);
+            currentItem = currentFolder;
+            const folderItems = await getFolderItems(DB, currentFolder.id);
+        
+            const folders: LinkItem[] = [];
+            const entries: PreviewData[] = [];
+            const images: PreviewData[] = [];
+            
+            console.log('folderItems', folderItems);
+
+            folderItems.forEach(item => {
+                switch(item.type) {
+                    case 'folder':
+                        folders.push({
+                            name: item.name,
+                            url: `${worldUniqueName}/${item.uniqueName}?type=folder`
+                        });
+                        break;
+
+                    case 'image':
+                        images.push({
+                            name: item.name,
+                            url: `${worldUniqueName}/${item.uniqueName}?type=image`,
+                            preview: '/pay.png'
+                        });
+                        break;
+
+                    case 'entry':
+                        entries.push({
+                            name: item.name,
+                            url: `${worldUniqueName}/${item.uniqueName}`,
+                            preview: '/pay.png'
+                        });
+                        break;
+
+                    default:
+                        break;
+                }
+            });
+            
+            const folderData: FolderData = {
+                folders,
+                images,
+                entries
+            }
+            
             finalResponse = folderData;
             break;
 

@@ -24,7 +24,7 @@ export async function getWorldByUniqueName(
         .first();
 
     if (!result) {
-        throw new Error('Word not found with uniqueName');
+        throw new Error('World not found with uniqueName');
     }
 
     return transformToCamelCase<World>(result);

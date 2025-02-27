@@ -14,7 +14,6 @@
         title: image.name
     }));
     const profileImage = dataLoaded.profileImage;
-    const description = dataLoaded.description;
     
     let index = 0;
     let forward = true;
@@ -50,7 +49,7 @@ title={selectedImage.title} bind:open={showModal} autoclose outsideclose>
         <div class="prose lg:prose-xl text-white">
             <h1 class="text-4xl font-bold mb-4">{name}</h1>
             <Card img={profileImage} class="float-right m-6">
-                <div>{description}</div>
+                
             </Card>
 
             {#each sections as section}

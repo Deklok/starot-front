@@ -4,12 +4,12 @@
 	import FolderView from "$lib/components/FolderView.svelte";
 	import ImageView from "$lib/components/ImageView.svelte";
 
-    const loadedData = page.data;
+    const loadedData: any = page.data;
 </script>
 
 <div>
     {#if loadedData.type === 'folder'}
-        <FolderView dataLoaded={loadedData as FolderData}></FolderView>
+        <FolderView {...loadedData}></FolderView>
     {/if}
 
     {#if loadedData.type === 'image'}
