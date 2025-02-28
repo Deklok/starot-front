@@ -11,14 +11,8 @@
 	let newFolderModal = $state(false);
 	let newImageModal = $state(false);
 	let tags = $state([]);
-	
-	function handleKeyDown(event: any) {
-		// Check if the key pressed is Enter
-		if (event.key === 'Enter') {
-		// Prevent the default form submission
-		event.preventDefault();
-		}
-	}
+	let imgFile: File | null = $state(null);
+	let imgUrl: string | null = $state(null);
 	
 	function handleOptionSelect(optionId: string) {
 		const selectedOption = optionId;
@@ -38,6 +32,25 @@
 			break;
 		}
 	}
+
+	async function handleImageSubmit(event: SubmitEvent) {
+        event.preventDefault();
+		
+		if (!imgFile) {
+            alert('Please select an image file.');
+            return;
+        }
+
+        const form = event.target as HTMLFormElement;
+        const formData = new FormData(form);
+
+        formData.append('image', imgFile); // Append the File object
+
+        await fetch(form.action, {
+            method: 'POST',
+            body: formData,
+        });
+    }
 </script>
 
 <div class="flex" data-sveltekit-preload-data="false">
@@ -121,21 +134,23 @@ title="Nuevo folder" bind:open={newFolderModal} outsideclose>
 
 <Modal classBody="flex justify-center"
 title="Nueva imagen" bind:open={newImageModal} outsideclose>
-	<form method="POST" action="?/newImage"
+	<form method="POST" action="?/newImage" onsubmit={handleImageSubmit}
 	class="flex flex-col self-center justify-center w-[90%]">
 		<FloatingLabelInput class="mb-4 self-center"
 		id="newImageName" name="newImageName" type="text">
 			Nombre
 		</FloatingLabelInput>
 		<div class="my-4">
-			<ImageFileDrop></ImageFileDrop>
+			<ImageFileDrop bind:value={imgFile} bind:imgUrl={imgUrl}
+			></ImageFileDrop>
 		</div>
 		<div class="mt-6">
 			<TagEditor bind:tags={tags}></TagEditor>
+			<input type="hidden" name="tags" value={JSON.stringify(tags)}>
 		</div>
 		<Button disabled={$isLoading} type="submit"
 		class="my-5 w-[70%] self-center" 
-		color="green">Crear folder</Button>
+		color="green">Crear imagen</Button>
 	</form>
 </Modal>
 

@@ -3,5 +3,6 @@
 interface Env {
 	DB: D1Database;
 	PASSPHRASE: string;
+	IMAGES_BASE_URL: string;
 	BUCKET: R2Bucket;
 }

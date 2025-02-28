@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Dropzone } from 'flowbite-svelte';
 
-	let value: File | null = $state(null);
-	let imgUrl: string | null = $state(null);
+	let { value = $bindable(), imgUrl = $bindable() } = $props();
+	
 	const dropHandle = (event: any) => {
 		console.log('changes made');
 		value = null;

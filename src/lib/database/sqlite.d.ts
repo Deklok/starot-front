@@ -28,6 +28,10 @@ interface Item {
     createdAt: string;
 }
 
+interface ItemWithPreview extends Item {
+    preview: string | null
+}
+
 interface Image {
     id: number;
     itemId: number;
