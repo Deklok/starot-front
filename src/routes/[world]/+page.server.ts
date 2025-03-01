@@ -8,15 +8,12 @@ import { createItem } from "$lib/database/item";
 import { formatStringForURL } from "$lib/utils/formatUrl";
 import { createImage } from "$lib/database/image";
 import { associateTagsToItem } from "$lib/database/tags";
-
-
-var currentWorld: World | null = null;
+import { currentWorld } from "$lib/stores/world";
+import { get } from "svelte/store";
 
 export const load: PageServerLoad = async ({ params, url, platform, cookies }) => {
-    
     // @ts-ignore
     const worldUniqueName: string = params.world; 
-    console.log('current world', worldUniqueName);
 
     if (!platform) {
         throw new Error('no platform loaded');
@@ -25,7 +22,8 @@ export const load: PageServerLoad = async ({ params, url, platform, cookies }) =
     const DB = platform.env.DB;
 
     const world = await getWorldByUniqueName(DB, worldUniqueName);
-    currentWorld = world;
+    currentWorld.set(world);
+    console.log('currentWorldStore ', world);
 
     const worldItems = await getWorldItems(DB, world.id);
 
@@ -75,13 +73,13 @@ export const load: PageServerLoad = async ({ params, url, platform, cookies }) =
 
 export const actions: Actions = {
     newFolder: async ({ request, platform, locals, params }) => {
-        console.log('checking current world variable ', currentWorld);
+        const world = get(currentWorld);
 
-        if (!currentWorld || !locals.userId) {
+        if (!world || !locals.userId) {
             throw new Error('necessary variables not set on action');
         }
 
-        if (currentWorld.userId !== locals.userId) {
+        if (world.userId !== locals.userId) {
             throw new Error('no permissions to create here for the user');
         }
     
@@ -95,18 +93,18 @@ export const actions: Actions = {
 
         const newFolderName = data.get('newFolderName') as string;
 
-        await createRootFolder(DB, newFolderName, currentWorld.id);
+        await createRootFolder(DB, newFolderName, world.id);
         
         return { success: true };
     },
     newImage: async ({ request, platform, locals }) => {
-        console.log('checking current world variable ', currentWorld);
+        const world = get(currentWorld);
 
-        if (!currentWorld || !locals.userId) {
+        if (world === null || !locals.userId) {
             throw new Error('necessary variables not set on action');
         }
 
-        if (currentWorld.userId !== locals.userId) {
+        if (world.userId !== locals.userId) {
             throw new Error('no permissions to create here for the user');
         }
     
@@ -124,7 +122,7 @@ export const actions: Actions = {
         const imgFile = data.get('image') as File;
         const imgExt = imgFile.name.split('.')[1];
         const filePath = 
-        `${currentWorld.uniqueName}/${imageUniqueName}.${imgExt}`;
+        `${world.uniqueName}/${imageUniqueName}.${imgExt}`;
         
         await uploadFile(R2BUCKET, filePath, imgFile);
 
@@ -134,7 +132,7 @@ export const actions: Actions = {
             name: imageName,
             uniqueName: imageUniqueName,
             type: 'image',
-            worldId: currentWorld.id
+            worldId: world.id
         });
 
         await associateTagsToItem(DB, itemId, tags.map((tag: any) => tag.name ));

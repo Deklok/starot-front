@@ -1,6 +1,34 @@
+import { currentWorld } from "$lib/stores/world";
+import { get } from "svelte/store";
 import type { PageServerLoad } from "./$types";
+import { getWorldByUniqueName } from "$lib/database/world";
+import type { Actions } from "@sveltejs/kit";
 
-export const load: PageServerLoad = async ({ params, url, platform, cookies }) => {
+var parentId: number | null;
+
+export const load: PageServerLoad = async ({ params, url, platform, locals }) => {
+    const worldUniqueName = params.world;
+    let world = get(currentWorld);
+
+    if (!platform) {
+        throw new Error('no platform loaded');
+    }
+
+    const DB = platform.env.DB;
+    
+    if (world === null || world.uniqueName !== worldUniqueName) {
+        world = await getWorldByUniqueName(DB, worldUniqueName);
+        currentWorld.set(world);
+    }
+
+    if (world.userId !== locals.userId) {
+        throw new Error(`user can't create entry here`);
+    }
+
+    console.log(url.searchParams);
+    let queryParentId = url.searchParams.get('parentId');
+    parentId = (queryParentId === null) ? null : Number(parentId);
+    
     const entryData: EntryViewData = {
         name: '',
         tags: [],
@@ -24,5 +52,32 @@ export const load: PageServerLoad = async ({ params, url, platform, cookies }) =
         ]
     };
 
-    return entryData;
+    return {
+        entryData,
+        uniqueName: null
+    };
+}
+
+export const actions: Actions = {
+    newEntry: async ( {request, platform, locals} ) => {
+        const world = get(currentWorld);
+
+        if (world === null || !locals.userId) {
+            throw new Error('necessary variables not set on action');
+        }
+
+        if (world.userId !== locals.userId) {
+            throw new Error('no permissions to create here for the user');
+        }
+    
+        if (!platform) {
+            throw new Error('no platform loaded');
+        }
+        
+        const DB = platform.env.DB;
+        const R2BUCKET = platform.env.BUCKET;
+        
+        const data = await request.formData();
+        console.log('data recieved', data);
+    }
 }

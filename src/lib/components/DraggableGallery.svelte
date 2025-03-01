@@ -6,13 +6,16 @@
 		items = e.detail.items;
 	}
 
-	interface DraggableGalleryItem {
+	export interface DraggableGalleryItem {
 		id: number;
 		url: string;
 		name: string;
+		file?: File;
 	}
 
-	let { items = $bindable() } = $props();
+	let { items = $bindable() } = $props<{
+		items: DraggableGalleryItem[]
+	}>();
 	let fileInput: HTMLElement;
 	let diableButtons = $state(false);
 
@@ -38,7 +41,8 @@
 				items.push({
 					id: items.length + 1,
 					name: selectedFile.name,
-					url: finalURl
+					url: finalURl,
+					file: selectedFile
 				});
 			}
 

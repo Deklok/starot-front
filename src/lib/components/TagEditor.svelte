@@ -2,7 +2,9 @@
 	import { Badge, Button, FloatingLabelInput } from "flowbite-svelte";
 	import { MinusOutline } from "flowbite-svelte-icons";
 
-    let { tags = $bindable() } = $props();
+    let { tags = $bindable() } = $props<{
+		tags: CustomTag[]
+	}>();
     let tagBind: string = $state('');
     
 	const enterTag = (e: any) => {

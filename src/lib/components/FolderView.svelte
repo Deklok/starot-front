@@ -37,7 +37,6 @@
         event.preventDefault();
 		
 		if (!imgFile) {
-            alert('Please select an image file.');
             return;
         }
 

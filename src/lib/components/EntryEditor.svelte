@@ -12,15 +12,15 @@
 		TableBodyRow
 	} from 'flowbite-svelte';
 	import { CircleMinusSolid, CirclePlusSolid, MinusOutline } from 'flowbite-svelte-icons';
-	import DraggableGallery from '$lib/components/DraggableGallery.svelte';
+	import DraggableGallery, { type DraggableGalleryItem } from '$lib/components/DraggableGallery.svelte';
 	import Notification from '$lib/components/Notification.svelte';
 	import TagEditor from './TagEditor.svelte';
 
-	let entryData: EntryViewData = $props();
-    
-    let entryName = $state(entryData.name);
-    let sections: SimpleEntrySection[] = $state(entryData.sections);
-
+	let  { entryData = $bindable(), uniqueName } = $props<{
+		entryData: EntryViewData,
+		uniqueName: string | null
+	}>();
+	
 	let confirmDelete = $state(false);
 	let confirmDeleteChar = $state(false);
 	let finalConfirmDeleteChat = $state(false);
@@ -29,19 +29,24 @@
 	let notificationMessage = $state(``);
 	let isNotificationError = $state(false);
 
+	let imgFile: File | null = $state(null);
+	let imgUrl: string | null = $state(null);
+
 	let selectedToRemove = $state(0);
 	
-    let profileSections: SimpleItem[] = $state(entryData.profileSections);
-
+    let entryUniqueName = uniqueName;
+	let entryName = $state(entryData.name);
+	let tags: CustomTag[] = $state(entryData.tags);
+	let profileSections: SimpleItem[] = $state(entryData.profileSections);
 	let images: ImageResponseData[] = $state(entryData.images);
-	let parsedImages = $state(
+    let sections: SimpleEntrySection[] = $state(entryData.sections);
+	let parsedImages: DraggableGalleryItem[] = $state(
 		images.map((image, index) => ({
 			id: index + 1,
 			name: image.name,
 			url: image.imageUrl
 		}))
 	);
-	let tags: CustomTag[] = $state(entryData.tags);
 
 	const addProfileSection = () => {
 		profileSections.push({
@@ -73,33 +78,52 @@
 		confirmDelete = false;
 	};
 
-	let tagBind: string = $state('');
-	const enterTag = (e: any) => {
-		if (e.key === 'Enter') {
-			tags.push({
-				name: tagBind,
-				url: ''
-			});
-			tagBind = ``;
-		}
-	};
-
-	const closeBadge = (index: number) => {
-		tags.splice(index, 1);
-	};
-
 	const openConfirmDelete = () => {
 		confirmDeleteChar = false;
 		finalConfirmDeleteChat = true;
 	}
 
-	const saveChanges = () => {
+	async function saveChanges() {
+		const formData = new FormData();
+
+		formData.append(`name`, entryName);
+		formData.append(`tags`, JSON.stringify(tags));
+		
+		if (!imgFile) {
+			return;
+		}
+		formData.append(`image`, imgFile);
+		profileSections.forEach((profileSection, index) => {
+			formData.append(`profile_section_name_${index}`, profileSection.label);
+			formData.append(`profile_section_value_${index}`, profileSection.value);
+		});
+
+		parsedImages.forEach((image, index) => {
+			if (image.file) {
+				formData.append(`entry_image_file_${index}`, image.file);
+			} else {
+				formData.append(`entry_image_url_${index}`, image.url);
+			}
+		});
+
+		sections.forEach((section, index) => {
+			formData.append(`section_title_${index}`, section.title);
+			formData.append(`section_content_${index}`, section.content);
+		});
+
+		await fetch('?/newEntry', {
+            method: 'POST',
+            body: formData,
+        });
+
+		/*
 		isNotificationError = false;
 		notificationMessage = `Articulo se ha salvao yipiieee!`;
 		isNotificationOpen = true;
 		setTimeout(() => {
 			isNotificationOpen = false;
 		}, 3000);
+		*/
 	}
 
 	const beginDeleteCharacter = () => {
@@ -171,7 +195,7 @@
 				<div class="text-white text-2xl text-center my-6">
 					Imagen de perfil
 				</div>
-				<ImageFileDrop />
+				<ImageFileDrop bind:value={imgFile} bind:imgUrl={imgUrl} />
 				<div class="mt-6">
 					<DraggableGallery bind:items={parsedImages} />
 				</div>
@@ -231,16 +255,18 @@
 			>
 				Guardar cambios
 			</Button>
-			<Button
-			color="red"
-			outline
-			pill
-			onclick={() => confirmDeleteChar = true}
-			size="lg"
-			class="!p2 mt-8 w-fit self-center mx-4"
-			>
-				Eliminar articulo
-			</Button>
+			{#if entryUniqueName !== null}
+				<Button
+				color="red"
+				outline
+				pill
+				onclick={() => confirmDeleteChar = true}
+				size="lg"
+				class="!p2 mt-8 w-fit self-center mx-4"
+				>
+					Eliminar articulo
+				</Button>
+			{/if}
 		</div>
 	</div>
 </div>
