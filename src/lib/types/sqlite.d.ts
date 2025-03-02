@@ -38,16 +38,8 @@ interface Image {
     filePath: string;
 }
 
-interface Entry {
-    id: number;
-    itemId: number;
-    name: string;
-    uniqueName: string;
-}
-
 interface EntrySection {
     id: number;
-    entryId: number;
     title: string;
     content: string;
     displayOrder: number;
@@ -55,16 +47,25 @@ interface EntrySection {
 
 interface EntryAttribute {
     id: number;
-    entryId: number;
     label: string;
     value: string;
     displayOrder: number;
 }
 
 interface EntryImage {
-    entryId: number;
-    imageId: number;
+    filePath: string;
     displayOrder: number;
+}
+
+interface Entry {
+    id: number;
+    itemId: number;
+    name: string;
+    imageUrl: string;
+    attributes: EntryAttribute[];
+    images: EntryImage[];
+    sections: EntrySection[];
+
 }
 
 interface Tag {

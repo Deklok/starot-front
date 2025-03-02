@@ -12,13 +12,8 @@ export const load: PageServerLoad = async (
         throw new Error('no platform loaded');
     }
 
-    const DB = platform.env.DB;
-
-    const worlds = await getWorlds(DB);
-
     return {
-        ...parentData,
-        worlds
+        ...parentData
     }
 }
 

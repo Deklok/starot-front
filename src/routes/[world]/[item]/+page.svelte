@@ -5,6 +5,7 @@
 	import ImageView from "$lib/components/ImageView.svelte";
 
     const loadedData: any = page.data;
+    console.log('loadedData var on svelte page ', loadedData);
 </script>
 
 <div>
@@ -13,10 +14,10 @@
     {/if}
 
     {#if loadedData.type === 'image'}
-        <ImageView dataLoaded={loadedData as ImageResponseData}></ImageView>
+        <ImageView {...loadedData}></ImageView>
     {/if}
 
     {#if loadedData.type === 'entry'}
-        <EntryView dataLoaded={loadedData as EntryViewData}></EntryView>
+        <EntryView {...loadedData}></EntryView>
     {/if}
 </div>

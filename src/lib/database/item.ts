@@ -1,4 +1,5 @@
 import { formatStringForURL } from "$lib/utils/formatUrl";
+import { transformToCamelCase } from "$lib/utils/underToCamelCase";
 import type { D1Database } from "@cloudflare/workers-types";
 
 export async function createItem(
@@ -20,4 +21,27 @@ export async function createItem(
     ).run();
 
     return result.meta.last_row_id;
+}
+
+export async function getItem(
+    db: D1Database,
+    worldUniqueName: string,
+    itemUniqueName: string,
+    itemType: string
+): Promise<Item> {
+    const result = await db.prepare(`
+        SELECT item.* FROM item
+        INNER JOIN world on world.id = item.world_id
+        WHERE item.unique_name = ? AND
+        world.unique_name = ? AND
+        item.type = ?
+    `)
+        .bind(itemUniqueName, worldUniqueName, itemType)
+        .first();
+
+    if (!result) {
+        throw new Error('Item not found');
+    }
+
+    return transformToCamelCase<Item>(result);
 }

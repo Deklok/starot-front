@@ -19,28 +19,6 @@ export async function createRootFolder(
     return uniqueName;
 }
 
-export async function getFolder(
-    db: D1Database,
-    worldUniqueName: string,
-    folderUniqueName: string
-): Promise<Item> {
-    const result = await db.prepare(`
-        SELECT * FROM item
-        INNER JOIN world on world.id = item.world_id
-        WHERE item.unique_name = ? AND
-        world.unique_name = ? AND
-        item.type = 'folder'
-    `)
-        .bind(folderUniqueName, worldUniqueName)
-        .first();
-
-    if (!result) {
-        throw new Error('World not found with uniqueName');
-    }
-
-    return transformToCamelCase<Item>(result);
-}
-
 export async function getFolderItems(
     db: D1Database,
     id: number

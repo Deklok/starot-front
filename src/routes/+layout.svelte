@@ -2,13 +2,15 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import '../app.css';
-	import { Button, Navbar, NavBrand, NavLi, NavUl } from 'flowbite-svelte';
+	import { Button, Navbar, NavBrand } from 'flowbite-svelte';
 	import { sidebarOpen } from '$lib/stores/sidebarStore';
 	import UserSideBar from '$lib/components/UserSideBar.svelte';
 	import { AngleLeftOutline, AngleRightOutline, PaperClipOutline } from 'flowbite-svelte-icons';
 	import { page } from '$app/state';
+	import Notification from '$lib/components/Notification.svelte';
+	import { notification } from '$lib/stores/notification';
 
-	const { username, isLoggedIn } = page.data;
+	const { username, isLoggedIn, worlds } = page.data;
 
 	// Toggle sidebar function
 	function toggleSidebar() {
@@ -19,6 +21,10 @@
 	function handleResize() {
 		$sidebarOpen = window.innerWidth >= 768;
 	}
+
+	$: isNotificationOpen = $notification.isOpen;
+	$: isNotificationError = $notification.isError;
+	$: notificationMessage = $notification.message;
 	
 	onMount(() => {
 		// Add resize listener
@@ -34,9 +40,9 @@
 	});
 </script>
 
-<div class="flex h-screen overflow-hidden ">
+<div class="flex h-screen overflow-hidden" data-sveltekit-preload-data="false">
 	<!-- Sidebar -->
-	<UserSideBar {isLoggedIn} {username} />
+	<UserSideBar {isLoggedIn} {username} {worlds} />
 
 	<!-- Main content - takes full width when sidebar is closed -->
 	<div class="z-40 flex flex-col flex-1 w-full transition-all duration-300 ease-in-out 
@@ -55,11 +61,6 @@
 					<span class="self-center whitespace-nowrap text-xl font-semibold text-white">Starot Wiki</span>
 				</NavBrand>
 			</div>
-			<NavUl>
-				<NavLi href="/">Home</NavLi>
-				<NavLi href="/users">Users</NavLi>
-				<NavLi href="/search">Search</NavLi>
-			</NavUl>
 			
 			<div class="flex md:order-2">
 				<Button outline pill
@@ -74,5 +75,7 @@
 				<slot {isLoggedIn} />
 			</div>
 		</main>
+		<Notification isOpen={isNotificationOpen} 
+		isError={isNotificationError} message={notificationMessage} />
 	</div>
 </div>

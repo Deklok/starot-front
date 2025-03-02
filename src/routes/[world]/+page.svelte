@@ -3,6 +3,7 @@
 	import FolderView from "$lib/components/FolderView.svelte";
 
     const loadedData: any = page.data;
+	const isWorldRoot = true;
 </script>
 
-<FolderView {...loadedData}></FolderView>
+<FolderView {...loadedData, isWorldRoot}></FolderView>

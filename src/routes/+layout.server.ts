@@ -1,4 +1,5 @@
 import { selectUserById } from "$lib/database/user";
+import { getWorlds } from "$lib/database/world";
 import type { LayoutServerLoad } from "./$types";
 
 export const load: LayoutServerLoad =  async ({ 
@@ -17,8 +18,12 @@ export const load: LayoutServerLoad =  async ({
         isLoggedIn = true;
     }
 
+    const DB = platform.env.DB;
+    const worlds = await getWorlds(DB);
+
     return {
         username,
-        isLoggedIn
+        isLoggedIn,
+        worlds
     };
 }

@@ -15,6 +15,9 @@
 	import DraggableGallery, { type DraggableGalleryItem } from '$lib/components/DraggableGallery.svelte';
 	import Notification from '$lib/components/Notification.svelte';
 	import TagEditor from './TagEditor.svelte';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
+	import { formatStringForURL } from '$lib/utils/formatUrl';
 
 	let  { entryData = $bindable(), uniqueName } = $props<{
 		entryData: EntryViewData,
@@ -86,17 +89,15 @@
 	async function saveChanges() {
 		const formData = new FormData();
 
-		formData.append(`name`, entryName);
-		formData.append(`tags`, JSON.stringify(tags));
-		
 		if (!imgFile) {
 			return;
 		}
+
+		formData.append(`name`, entryName);
+		formData.append(`tags`, JSON.stringify(tags));
 		formData.append(`image`, imgFile);
-		profileSections.forEach((profileSection, index) => {
-			formData.append(`profile_section_name_${index}`, profileSection.label);
-			formData.append(`profile_section_value_${index}`, profileSection.value);
-		});
+		formData.append(`profile_sections`, JSON.stringify(profileSections));
+		formData.append(`sections`, JSON.stringify(sections));
 
 		parsedImages.forEach((image, index) => {
 			if (image.file) {
@@ -106,15 +107,15 @@
 			}
 		});
 
-		sections.forEach((section, index) => {
-			formData.append(`section_title_${index}`, section.title);
-			formData.append(`section_content_${index}`, section.content);
-		});
-
+		const worldUniqueName = page.params.world;
+		/*
 		await fetch('?/newEntry', {
             method: 'POST',
             body: formData,
         });
+		*/
+
+		goto(`/${worldUniqueName}/${formatStringForURL(entryName)}`);
 
 		/*
 		isNotificationError = false;
@@ -133,8 +134,6 @@
 
 <div class="flex">
 	<div class="m-4 flex w-full flex-col justify-center bg-slate-700 p-4">
-		<Notification isOpen={isNotificationOpen} 
-		isError={isNotificationError} message={notificationMessage} />
 		<div class="w-full mb-8 flex flex-wrap">
 			<div class="w-full md:w-3/4">
 				<div class="flex flex-wrap text-2xl text-white justify-center">

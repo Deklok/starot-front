@@ -33,9 +33,9 @@ interface SimpleEntrySection {
 
 interface EntryViewData {
     name: string;
+    entryImage: string;
     profileSections: SimpleItem[];
     tags: CustomTag[];
-    profileImage: string;
     images: ImageResponseData[];
     sections: SimpleEntrySection[];
 }

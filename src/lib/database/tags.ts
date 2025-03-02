@@ -38,3 +38,17 @@ export async function associateTagsToItem(
         `).bind(...itemTagBindings).run();
     }
 }
+
+export async function getItemTags(
+    db: D1Database,
+    itemId: number
+): Promise<string[]> {
+    const result = await db.prepare(
+        `SELECT tag.name FROM item_tag
+        INNER JOIN tag ON tag.id = item_tag.tag_id AND item_tag.item_id = ?`
+    ).bind(itemId).all();
+
+    const results = result.results;
+
+    return results.map((r) => r.name as string);
+}

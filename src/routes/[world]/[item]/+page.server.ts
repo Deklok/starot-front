@@ -1,4 +1,8 @@
-import { getFolder, getFolderItems } from "$lib/database/folder";
+import { getEntry } from "$lib/database/entry";
+import { getFolderItems } from "$lib/database/folder";
+import { getImageForItem } from "$lib/database/image";
+import { getItem } from "$lib/database/item";
+import { getItemTags } from "$lib/database/tags";
 import type { PageServerLoad } from "./$types";
 
 var currentItem: Item | null = null;
@@ -19,37 +23,15 @@ export const load: PageServerLoad = async ({ params, url, platform, cookies }) =
     console.log(url.searchParams);
     const typeItem = url.searchParams.get('type') || 'entry';
 
-    const imageData: ImageResponseData = {
-        name: 'My coso favorito de pay la amo joder',
-        imageUrl: '/pay.png',
-        tags: [
-            { name: 'Faroven', url:'/search/Faroven' },
-            { name: 'Nachi', url:'/search/Faroven' },
-            { name: 'Chessecake', url:'/search/Faroven' },
-        ]
-    };
-    const entryData: EntryViewData = {
-        name: 'Pay',
-        tags: [],
-        profileSections: [],
-        profileImage: '/pay.png',
-        images: [
-            { name: 'Pay pay', imageUrl: '/pay.png', tags:[] },
-            { name: 'Pay pay', imageUrl: '/payalt.png', tags:[] },
-            { name: 'Pay pay', imageUrl: '/paypay.jpg', tags:[] },
-            { name: 'Pay pay', imageUrl: '/maspay.png', tags:[] },
-            { name: 'Pay pay', imageUrl: '/payfull.jpg', tags:[] },
-            { name: 'Pay pay', imageUrl: '/payyobs.jpg', tags:[] }
-        ],
-        sections: [
-            { title: 'Resumen', content: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.` }
-        ]
-    };
-
     let finalResponse;
     switch(typeItem) {
         case 'folder':
-            const currentFolder = await getFolder(DB, worldUniqueName, itemUniqueName);
+            const currentFolder = await getItem(
+                DB, 
+                worldUniqueName, 
+                itemUniqueName,
+                'folder'
+            );
             currentItem = currentFolder;
             const folderItems = await getFolderItems(DB, currentFolder.id);
         
@@ -99,10 +81,69 @@ export const load: PageServerLoad = async ({ params, url, platform, cookies }) =
             break;
 
         case 'image':
+        /*
+    const imageData: ImageResponseData = {
+        name: 'My coso favorito de pay la amo joder',
+        imageUrl: '/pay.png',
+        tags: [
+            { name: 'Faroven', url:'/search/Faroven' },
+            { name: 'Nachi', url:'/search/Faroven' },
+            { name: 'Chessecake', url:'/search/Faroven' },
+        ]
+    };
+    */      currentItem = await getItem(
+                DB, 
+                worldUniqueName,
+                itemUniqueName,
+                'image'
+            );
+            console.log('image item', currentItem);
+            const imageTags = await getItemTags(DB, currentItem.id);
+            const imageUrl = await getImageForItem(DB, currentItem.id);
+            const imageData: ImageResponseData = {
+                name: currentItem.name,
+                imageUrl,
+                tags: imageTags.map((tag) => ({
+                    name: tag,
+                    url: `/search?tag=${tag}`
+                }))
+            }
             finalResponse = imageData;
             break;
 
         case 'entry':
+            currentItem = await getItem(
+                DB, 
+                worldUniqueName,
+                itemUniqueName,
+                'entry'
+            );
+            const entryTags = await getItemTags(DB, currentItem.id);
+            const entry = await getEntry(
+                DB,
+                currentItem.id
+            );
+            const entryData: EntryViewData = {
+                name: entry.name,
+                entryImage: entry.imageUrl,
+                tags: entryTags.map((tag) => ({
+                    name: tag,
+                    url: ''
+                })),
+                profileSections: entry.attributes.map((a) => ({
+                    label: a.label,
+                    value: a.value
+                })),
+                images: entry.images.map((img) => ({
+                    imageUrl: img.filePath,
+                    name: '',
+                    tags: []
+                })),
+                sections: entry.sections.map((sec) => ({
+                    title: sec.title,
+                    content: sec.content
+                }))
+            }
             finalResponse = entryData;
             break;
 
@@ -111,5 +152,8 @@ export const load: PageServerLoad = async ({ params, url, platform, cookies }) =
             break;
     }
 
+    console.log('returning from page.server ',
+        {...finalResponse, type: typeItem}
+    );
     return {...finalResponse, type: typeItem};
 }

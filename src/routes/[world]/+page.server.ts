@@ -120,13 +120,10 @@ export const actions: Actions = {
         const imageUniqueName = formatStringForURL(imageName);
         const tags = JSON.parse(data.get('tags') as string || '[]');
         const imgFile = data.get('image') as File;
-        const imgExt = imgFile.name.split('.')[1];
-        const filePath = 
-        `${world.uniqueName}/${imageUniqueName}.${imgExt}`;
+        const r2Key = 
+        `${world.uniqueName}/${imageUniqueName}`;
         
-        await uploadFile(R2BUCKET, filePath, imgFile);
-
-        const finalImagePath = `${IMAGES_BASE_URL}/${filePath}`;
+        const finalImagePath = await uploadFile(R2BUCKET, r2Key, imgFile);
 
         const itemId = await createItem(DB, {
             name: imageName,

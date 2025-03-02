@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { capitalizeFirstLetter } from "$lib/utils/stringFormat";
 	import { Badge, Button, FloatingLabelInput } from "flowbite-svelte";
 	import { MinusOutline } from "flowbite-svelte-icons";
 
@@ -31,15 +32,9 @@
 	const closeBadge = (index: number) => {
 		tags.splice(index, 1);
 	};
-	
-	// Function to capitalize first letter for display
-	const capitalizeFirstLetter = (string: string) => {
-		if (!string) return '';
-		return string.charAt(0).toUpperCase() + string.slice(1);
-	};
-	
+
 	// Force lowercase in the input field
-	const forceLowercase = (e: any) => {
+	export const forceLowercase = (e: any) => {
 		tagBind = tagBind.toLowerCase();
 	};
 </script>

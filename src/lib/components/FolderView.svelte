@@ -5,8 +5,15 @@
 	import { isLoading } from '$lib/stores/loading';	
 	import TagEditor from './TagEditor.svelte';
 	import ImageFileDrop from './ImageFileDrop.svelte';
+	import { goto } from '$app/navigation';
 
-	const { isLoggedIn, folders, images, entries } = page.data;
+	const { 
+		parentId, 
+		isLoggedIn, 
+		folders, 
+		images, 
+		entries 
+	} = page.data;
 
 	let newFolderModal = $state(false);
 	let newImageModal = $state(false);
@@ -24,8 +31,15 @@
 			break;
 		case 'entry':
 			// Handle entry creation
-			console.log('Creating a new entry');
+			const worldUniqueName = page.params.world;
+			let redirectUrl = `/${worldUniqueName}/editor`;
+			if (parentId) {
+				redirectUrl = `${redirectUrl}?parentId=${parentId}`
+			}
+			
+			goto(redirectUrl);
 			break;
+
 		case 'image':
 			// Handle image upload
 			newImageModal = true;
