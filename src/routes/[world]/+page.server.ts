@@ -23,7 +23,7 @@ export const load: PageServerLoad = async ({ params, url, platform, cookies }) =
 
     const world = await getWorldByUniqueName(DB, worldUniqueName);
     currentWorld.set(world);
-    console.log('currentWorldStore ', world);
+
 
     const worldItems = await getWorldItems(DB, world.id);
 
@@ -53,7 +53,7 @@ export const load: PageServerLoad = async ({ params, url, platform, cookies }) =
                 entries.push({
                     name: item.name,
                     url: `${worldUniqueName}/${item.uniqueName}`,
-                    preview: '/pay.png'
+                    preview: item.entryPreview as string
                 });
                 break;
 
@@ -63,6 +63,7 @@ export const load: PageServerLoad = async ({ params, url, platform, cookies }) =
     });
     
     const folderData: FolderData = {
+        name: world.name,
         folders,
         images,
         entries
@@ -92,8 +93,16 @@ export const actions: Actions = {
         const data = await request.formData();
 
         const newFolderName = data.get('newFolderName') as string;
+        const folderUniqueName = formatStringForURL(newFolderName);
+        const tags = JSON.parse(data.get('tags') as string || '[]');
 
-        await createRootFolder(DB, newFolderName, world.id);
+        const itemId = await createItem(DB, {
+            name: newFolderName,
+            uniqueName: folderUniqueName,
+            type: 'folder',
+            worldId: world.id
+        });
+        await associateTagsToItem(DB, itemId, tags.map((tag: any) => tag.name ));
         
         return { success: true };
     },

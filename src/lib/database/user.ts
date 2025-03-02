@@ -10,7 +10,7 @@ export async function login(
         .bind(username)
         .first();
 
-    console.log('user from database', user);
+
 
     if (!user) {
         return null;
@@ -18,7 +18,7 @@ export async function login(
 
     let hashedPassword = user.password_hash;
 
-    console.log('hashed password', hashedPassword);
+
     if (!hashedPassword) {
         hashedPassword = hashPassword(password);
         

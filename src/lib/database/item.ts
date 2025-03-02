@@ -27,16 +27,26 @@ export async function getItem(
     db: D1Database,
     worldUniqueName: string,
     itemUniqueName: string,
-    itemType: string
+    itemType: string,
+    parentId?: number
 ): Promise<Item> {
-    const result = await db.prepare(`
+    let query = `
         SELECT item.* FROM item
         INNER JOIN world on world.id = item.world_id
         WHERE item.unique_name = ? AND
         world.unique_name = ? AND
         item.type = ?
-    `)
-        .bind(itemUniqueName, worldUniqueName, itemType)
+    `;
+
+    const bindings: (string | number)[] = [itemUniqueName, worldUniqueName, itemType];
+
+    if (parentId !== undefined) {
+        query += ` AND item.parent_id = ?`;
+        bindings.push(parentId);
+    }
+
+    const result = await db.prepare(query)
+        .bind(...bindings)
         .first();
 
     if (!result) {

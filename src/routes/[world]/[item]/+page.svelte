@@ -4,8 +4,7 @@
 	import FolderView from "$lib/components/FolderView.svelte";
 	import ImageView from "$lib/components/ImageView.svelte";
 
-    const loadedData: any = page.data;
-    console.log('loadedData var on svelte page ', loadedData);
+    let loadedData: any = $state(page.data);
 </script>
 
 <div>

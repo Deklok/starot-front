@@ -8,7 +8,8 @@
 		SidebarWrapper
 	} from 'flowbite-svelte';
 	import {
-		GlobeSolid
+		GlobeSolid,
+		HomeSolid
 	} from 'flowbite-svelte-icons';
 
 	// Sample user data (replace with your actual user data)
@@ -37,6 +38,12 @@
 
 			<!-- Navigation items with dark theme styling -->
 			<SidebarGroup>
+				<SidebarItem label="Home" href={`/`}
+				activeClass="bg-gray-700" class="text-white hover:bg-gray-700">
+					<svelte:fragment slot="icon">
+						<HomeSolid class="text-gray-300" />
+					</svelte:fragment>
+				</SidebarItem>					
 				{#each worlds as world}
 				<SidebarItem label={world.name} href={`/${world.uniqueName}`}
 				activeClass="bg-gray-700" class="text-white hover:bg-gray-700">

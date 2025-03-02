@@ -9,11 +9,10 @@ import { uploadFile } from "$lib/images/r2";
 import { createEntry } from "$lib/database/entry";
 import { associateTagsToItem } from "$lib/database/tags";
 
-var parentId: number | null;
+var parentId: number | null = null;
 
 export const load: PageServerLoad = async ({ params, url, platform, locals }) => {
     const worldUniqueName = params.world;
-    let world = get(currentWorld);
 
     if (!platform) {
         throw new Error('no platform loaded');
@@ -21,6 +20,7 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
 
     const DB = platform.env.DB;
 
+    let world = get(currentWorld);
     if (world === null || world.uniqueName !== worldUniqueName) {
         world = await getWorldByUniqueName(DB, worldUniqueName);
         currentWorld.set(world);
@@ -30,12 +30,31 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
         throw new Error(`user can't create entry here`);
     }
 
-    console.log(url.searchParams);
     let queryParentId = url.searchParams.get('parentId');
-    parentId = (queryParentId === null) ? null : Number(parentId);
+    parentId = (queryParentId === null) ? null : Number(queryParentId);
+
 
     const entryData: EntryViewData = {
-        
+        name: '',
+        tags: [],
+        profileSections: [
+            { label: 'Nombre', value: '' },
+            { label: 'Apodo', value: '' },
+            { label: 'Mundo', value: '' },
+            { label: 'Región', value: '' },
+            { label: 'Raza', value: '' },
+            { label: 'Altura', value: '' },
+            { label: 'Ocupaciones', value: '' },
+            { label: 'Familia', value: '' },
+            { label: 'Estado', value: '' },
+            { label: 'Pareja', value: '' },
+            { label: 'Estatus', value: '' }
+        ],
+        entryImage: '',
+        images: [],
+        sections: [
+            { title: 'Resumen', content: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.` }
+        ]
     } as EntryViewData;
 
     return {
@@ -45,7 +64,7 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
 }
 
 export const actions: Actions = {
-    newEntry: async ({ request, platform, locals }) => {
+    newEntry: async ({ request, platform, locals, url }) => {
         const world = get(currentWorld);
 
         if (world === null || !locals.userId) {
@@ -64,7 +83,7 @@ export const actions: Actions = {
         const R2BUCKET = platform.env.BUCKET;
 
         const data = await request.formData();
-        console.log('data recieved', data);
+
 
         const name = data.get('name') as string;
         const tags = JSON.parse(data.get('tags') as string || '[]');

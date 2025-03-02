@@ -5,7 +5,7 @@
 
 	let id = uuidv4();
 	let editorElement: HTMLElement;
-	let { text } = $props();
+	let { text = $bindable() } = $props();
 
 	const loadQuill = async (element: HTMLElement) => {
 		// @ts-ignore
@@ -14,9 +14,16 @@
 				throw new Error('editorElement is undefined');
 			}
 			// @ts-ignore
-			new window.Quill(element, {
+			const quill = new window.Quill(element, {
 				theme: 'snow'
 			});
+
+			quill.on('text-change', () => {
+                const newText = quill.root.innerHTML;
+                if (newText !== text) {
+                    text = newText;
+                }
+            });
 		} else {
 			throw new Error('Quill is not defined');
 		}

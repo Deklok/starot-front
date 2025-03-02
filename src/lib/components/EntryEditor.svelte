@@ -11,12 +11,11 @@
 		TableBodyCell,
 		TableBodyRow
 	} from 'flowbite-svelte';
-	import { CircleMinusSolid, CirclePlusSolid, MinusOutline } from 'flowbite-svelte-icons';
+	import { CircleMinusSolid, CirclePlusSolid } from 'flowbite-svelte-icons';
 	import DraggableGallery, { type DraggableGalleryItem } from '$lib/components/DraggableGallery.svelte';
-	import Notification from '$lib/components/Notification.svelte';
 	import TagEditor from './TagEditor.svelte';
-	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
 	import { formatStringForURL } from '$lib/utils/formatUrl';
 
 	let  { entryData = $bindable(), uniqueName } = $props<{
@@ -27,10 +26,6 @@
 	let confirmDelete = $state(false);
 	let confirmDeleteChar = $state(false);
 	let finalConfirmDeleteChat = $state(false);
-
-	let isNotificationOpen = $state(false);
-	let notificationMessage = $state(``);
-	let isNotificationError = $state(false);
 
 	let imgFile: File | null = $state(null);
 	let imgUrl: string | null = $state(null);
@@ -108,23 +103,13 @@
 		});
 
 		const worldUniqueName = page.params.world;
-		/*
+		
 		await fetch('?/newEntry', {
             method: 'POST',
             body: formData,
         });
-		*/
 
 		goto(`/${worldUniqueName}/${formatStringForURL(entryName)}`);
-
-		/*
-		isNotificationError = false;
-		notificationMessage = `Articulo se ha salvao yipiieee!`;
-		isNotificationOpen = true;
-		setTimeout(() => {
-			isNotificationOpen = false;
-		}, 3000);
-		*/
 	}
 
 	const beginDeleteCharacter = () => {
@@ -216,7 +201,7 @@
 							Seccion
 						</FloatingLabelInput>
 					</div>
-					<RichEditor text={section.content} />
+					<RichEditor bind:text={section.content} />
 				</div>
 				<div class="mx-4 flex object-center">
 					<Button

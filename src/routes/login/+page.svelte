@@ -1,25 +1,21 @@
 <script lang="ts">
-	import CustomSideBar from "$lib/components/CustomSideBar.svelte";
-	import { Button } from "flowbite-svelte";
+	import { Button, FloatingLabelInput } from "flowbite-svelte";
 </script>
 
-Pito
-<div>
+<div class="w-full md:w-[50%] justify-self-center">
 	<!-- Login Form -->
-	<form method="POST" action="?/login">
-		<label>
-			Username
-			<input name="username" type="text">
-		</label>
-		<label>
-			Password
-			<input name="password" type="password">
-		</label>
-		<Button type="submit">
-			Login
-		</Button>
-		<Button type="submit" formaction="?/register">
-			Register
+	<form class="flex flex-col justify-center"
+	method="POST" action="?/login">
+		<div class="m-3">
+			<FloatingLabelInput id="username" name="username"
+			type="text" > Username </FloatingLabelInput>	
+		</div>
+		<div class="m-3">
+			<FloatingLabelInput id="password" name="password"
+			type="password"> Contraseña </FloatingLabelInput>	
+		</div>
+		<Button color="dark" type="submit">
+			Entrale we
 		</Button>
 	</form>
 </div>

@@ -4,7 +4,7 @@ import { fail, redirect, type Actions } from '@sveltejs/kit';
 
 export const actions = {
     login: async ({ cookies, request, platform, locals }) => {
-        console.log('enter to login action');
+
         const data = await request.formData();
         const username = data.get('username') as string;
         const password = data.get('password') as string;
@@ -20,7 +20,7 @@ export const actions = {
                 username,
                 password
             );
-            console.log('resultLogin', resultLogin);
+
             if (!resultLogin) {
                 return fail(401);
             }
@@ -31,7 +31,7 @@ export const actions = {
                 path: '/',
             });
         } catch (err: any) {
-            console.log('err on db query', err);
+
             return fail(500);
         }
 

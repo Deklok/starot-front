@@ -15,7 +15,7 @@ export const uploadFile = async (
     const { error } = await tryCatch(r2.put(filePath, buffer));
 
     if (error) {
-        console.log('error on R2 upload');
+
         throw new Error(error.message);
     }
 

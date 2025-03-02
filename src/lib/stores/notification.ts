@@ -1,47 +1,76 @@
 // notificationStore.ts
 
-import { writable, type Writable } from 'svelte/store';
+import { writable, get } from 'svelte/store';
 
-interface NotificationStore {
+interface NotificationState {
   isOpen: boolean;
+  isClosing: boolean;
   isError: boolean;
   message: string;
 }
 
-const initialNotificationState: NotificationStore = {
+const initialState: NotificationState = {
   isOpen: false,
+  isClosing: false,
   isError: false,
-  message: '',
+  message: ''
 };
 
-const notificationStore: Writable<NotificationStore> = writable(initialNotificationState);
+// Create the actual store
+const store = writable<NotificationState>(initialState);
 
+// Keep track of the timeout outside the store to avoid serialization issues
+let activeTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function clearActiveTimeout() {
+  if (activeTimeout !== null) {
+    clearTimeout(activeTimeout);
+    activeTimeout = null;
+  }
+}
+
+// Public API
 export const notification = {
-  subscribe: notificationStore.subscribe,
-  set: (newState: NotificationStore) => notificationStore.set(newState),
-  update: (updater: (value: NotificationStore) => NotificationStore) => notificationStore.update(updater),
+  subscribe: store.subscribe,
+  
   open: (message: string, isError = false) => {
-    notificationStore.update((state) => ({
-      ...state,
+    // Clear any existing timeout
+    clearActiveTimeout();
+    
+    // Update the store immediately
+    store.set({
       isOpen: true,
+      isClosing: false,
       isError,
-      message,
-    }));
-
-    setTimeout(() => {
-        notificationStore.update((state) => ({
-          ...state,
-          isOpen: false,
-          message: '',
-        }));
-      }, 3000); // 3000 milliseconds = 3 seconds
+      message
+    });
+    
+    // Set new timeout for auto-close
+    activeTimeout = setTimeout(() => {
+      const currentState = get(store);
+      
+      if (currentState.isOpen) {
+        notification.close();
+      }
+    }, 3000);
   },
+  
   close: () => {
-    notificationStore.update((state) => ({
+    clearActiveTimeout();
+    
+    store.update(state => ({
       ...state,
       isOpen: false,
-      message: '',
+      isClosing: true
     }));
   },
-  reset: () => notificationStore.set(initialNotificationState),
+  
+  finishClose: () => {
+    store.set(initialState);
+  },
+  
+  reset: () => {
+    clearActiveTimeout();
+    store.set(initialState);
+  }
 };

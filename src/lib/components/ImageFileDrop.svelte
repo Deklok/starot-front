@@ -4,7 +4,7 @@
 	let { value = $bindable(), imgUrl = $bindable() } = $props();
 	
 	const dropHandle = (event: any) => {
-		console.log('changes made');
+
 		value = null;
 		event.preventDefault();
 		if (event.dataTransfer.items[0]) {
@@ -18,7 +18,7 @@
 	};
 
 	const handleChange = (event: any) => {
-		console.log('changes made');
+
 		value = null;
 		const files = event.target.files;
 		if (files.length > 0) {

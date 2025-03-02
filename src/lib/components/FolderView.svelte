@@ -5,15 +5,18 @@
 	import { isLoading } from '$lib/stores/loading';	
 	import TagEditor from './TagEditor.svelte';
 	import ImageFileDrop from './ImageFileDrop.svelte';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
+	import { notification } from '$lib/stores/notification';
 
-	const { 
-		parentId, 
-		isLoggedIn, 
-		folders, 
-		images, 
-		entries 
+	let { 
+		isLoggedIn
 	} = page.data;
+
+	let parentId = $derived(page.data.parentId);
+	let folders = $derived(page.data.folders);
+	let images = $derived(page.data.images);
+	let entries  = $derived(page.data.entries);
+	let currentId = $derived(page.data.currentId);
 
 	let newFolderModal = $state(false);
 	let newImageModal = $state(false);
@@ -33,10 +36,9 @@
 			// Handle entry creation
 			const worldUniqueName = page.params.world;
 			let redirectUrl = `/${worldUniqueName}/editor`;
-			if (parentId) {
-				redirectUrl = `${redirectUrl}?parentId=${parentId}`
+			if (currentId) {
+				redirectUrl = `${redirectUrl}?parentId=${currentId}`
 			}
-			
 			goto(redirectUrl);
 			break;
 
@@ -45,6 +47,10 @@
 			newImageModal = true;
 			break;
 		}
+	}
+
+	function reloadPage() {
+		invalidateAll();
 	}
 
 	async function handleImageSubmit(event: SubmitEvent) {
@@ -63,6 +69,26 @@
             method: 'POST',
             body: formData,
         });
+
+		notification.open(`Imagen creada`, false);
+		newImageModal = false;
+		reloadPage();
+    }
+
+	async function handleFolderSubmit(event: SubmitEvent) {
+        event.preventDefault();
+
+        const form = event.target as HTMLFormElement;
+        const formData = new FormData(form);
+
+        await fetch(form.action, {
+            method: 'POST',
+            body: formData,
+        });
+
+		notification.open(`Folder creado`, false);
+		newFolderModal = false;
+		reloadPage();
     }
 </script>
 
@@ -130,7 +156,7 @@
 
 <Modal classBody="flex justify-center"
 title="Nuevo folder" bind:open={newFolderModal} outsideclose>
-	<form method="POST" action="?/newFolder"
+	<form method="POST" action="?/newFolder" onsubmit={handleFolderSubmit}
 	class="flex flex-col self-center justify-center w-[90%]">
 		<FloatingLabelInput class="mb-4 self-center"
 		id="newFolderName" name="newFolderName" type="text">
@@ -138,6 +164,7 @@ title="Nuevo folder" bind:open={newFolderModal} outsideclose>
 		</FloatingLabelInput>
 		<div class="mt-6">
 			<TagEditor bind:tags={tags}></TagEditor>
+			<input type="hidden" name="tags" value={JSON.stringify(tags)}>
 		</div>
 		<Button disabled={$isLoading} type="submit"
 		class="my-5 w-[70%] self-center" 

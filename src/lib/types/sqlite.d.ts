@@ -30,6 +30,7 @@ interface Item {
 
 interface ItemWithPreview extends Item {
     preview: string | null
+    entryPreview: string | null
 }
 
 interface Image {

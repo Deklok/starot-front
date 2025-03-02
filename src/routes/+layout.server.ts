@@ -12,7 +12,7 @@ export const load: LayoutServerLoad =  async ({
     let username = 'Invitado';
     let isLoggedIn = false;
     if (locals.userId) {
-        console.log('user found logged in');
+
         //const user = await selectUserById(DB, locals.userId);
         username = locals.username as string;
         isLoggedIn = true;

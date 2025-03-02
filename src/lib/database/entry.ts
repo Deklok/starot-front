@@ -131,7 +131,7 @@ export async function createEntry(
     const result = await db.prepare(`
         INSERT INTO 
         entry(item_id, name, image_url) 
-        VALUES (?,?,?,?)
+        VALUES (?,?,?)
     `).bind(itemId, entry.name, entry.image)
         .run();
 

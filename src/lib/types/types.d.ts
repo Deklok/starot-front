@@ -10,6 +10,7 @@ interface LinkItem {
 }
 
 interface FolderData  {
+    name: string;
     folders: LinkItem[];
     images: PreviewData[];
     entries: PreviewData[];

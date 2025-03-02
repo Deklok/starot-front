@@ -5,10 +5,9 @@
 	import { Button, Navbar, NavBrand } from 'flowbite-svelte';
 	import { sidebarOpen } from '$lib/stores/sidebarStore';
 	import UserSideBar from '$lib/components/UserSideBar.svelte';
-	import { AngleLeftOutline, AngleRightOutline, PaperClipOutline } from 'flowbite-svelte-icons';
+	import { ArrowLeftOutline, BarsOutline, CloseOutline, PaperClipOutline } from 'flowbite-svelte-icons';
 	import { page } from '$app/state';
 	import Notification from '$lib/components/Notification.svelte';
-	import { notification } from '$lib/stores/notification';
 
 	const { username, isLoggedIn, worlds } = page.data;
 
@@ -21,10 +20,6 @@
 	function handleResize() {
 		$sidebarOpen = window.innerWidth >= 768;
 	}
-
-	$: isNotificationOpen = $notification.isOpen;
-	$: isNotificationError = $notification.isError;
-	$: notificationMessage = $notification.message;
 	
 	onMount(() => {
 		// Add resize listener
@@ -50,11 +45,11 @@
 		<Navbar class="!bg-slate-800">
 			<div class="flex items-center">
 				<!-- Toggle button with appropriate icon -->
-				<Button class="mr-2" pill size="sm" on:click={toggleSidebar}>
+				<Button class="mr-2" pill size="sm" onclick={toggleSidebar}>
 					{#if $sidebarOpen}
-						<AngleLeftOutline></AngleLeftOutline>
+						<CloseOutline></CloseOutline>
 					{:else}
-						<AngleRightOutline></AngleRightOutline>
+						<BarsOutline></BarsOutline>
 					{/if}
 				</Button>
 				<NavBrand href="/">
@@ -72,10 +67,16 @@
 
 		<main class="flex-1 overflow-y-auto p-4 bg-slate-900">
 			<div class="bg-slate-700 rounded-lg m-2 p-6">
+				{#if page.url.pathname !== '/'}
+					<Button color="dark" class="mb-8"
+					onclick={() => { history.back() }}>
+						<ArrowLeftOutline
+						></ArrowLeftOutline>
+					</Button>
+				{/if}
 				<slot {isLoggedIn} />
 			</div>
 		</main>
-		<Notification isOpen={isNotificationOpen} 
-		isError={isNotificationError} message={notificationMessage} />
+		<Notification />
 	</div>
 </div>
