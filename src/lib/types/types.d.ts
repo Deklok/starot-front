@@ -9,15 +9,14 @@ interface LinkItem {
     url: string;
 }
 
-interface ProfileData  {
-    username: string;
+interface FolderData  {
+    name: string;
     folders: LinkItem[];
     images: PreviewData[];
-    characters: PreviewData[];
+    entries: PreviewData[];
 }
 
 interface CustomTag {
-    color: 'dark' | 'red' | 'yellow' | 'green' | 'indigo' | 'purple' | 'pink' | 'blue' | 'primary' | 'none';
     name: string;
     url: string;
 }
@@ -28,18 +27,18 @@ interface ImageResponseData {
     tags: CustomTag[];
 }
 
-interface CharacterSection {
+interface SimpleEntrySection {
     title: string;
     content: string;
 }
 
-interface CharacterProfileData {
+interface EntryViewData {
     name: string;
-    description: string;
+    entryImage: string;
+    profileSections: SimpleItem[];
     tags: CustomTag[];
-    profileImage: string;
     images: ImageResponseData[];
-    sections: CharacterSection[];
+    sections: SimpleEntrySection[];
 }
 
 interface SimpleItem {
