@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { tryCatch } from '$lib/utils/trycatch';
 	import { onMount, tick } from 'svelte';
-	import { v4 as uuidv4 } from 'uuid';
 
-	let id = uuidv4();
+	let id = crypto.randomUUID();
 	let editorElement: HTMLElement;
 	let { text = $bindable() } = $props();
 
