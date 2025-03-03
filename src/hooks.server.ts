@@ -5,7 +5,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	const session = event.cookies.get('session');
 
 	if (session) {
-		const jsonresult = JSON.parse(decrypt(session));
+		const jsonresult = JSON.parse(await decrypt(session));
 		event.locals.userId = jsonresult.id;
 		event.locals.username = jsonresult.username;
 	}

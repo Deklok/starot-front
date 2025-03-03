@@ -3,55 +3,96 @@ import { PASSPHRASE } from '$env/static/private';
 
 const SALT_ROUNDS = 6;
 
-let crypto: any;
+// Function to derive a secret key from the PASSPHRASE
+// This will run once when the module is imported
+let secretKeyPromise: Promise<CryptoKey>;
 
-if (typeof process !== 'undefined' && process.versions && process.versions.node) {
-    // Node.js environment (build time or Cloudflare Workers)
-    crypto = await import('node:crypto');
-} else {
-    // Browser or other environment (shouldn't be reached in production)
-    console.warn('Crypto module not available in this environment.');
-    crypto = {
-        createHash: () => {
-            throw new Error('Crypto module not available.');
-        },
-        randomBytes: () => {
-            throw new Error('Crypto module not available.');
-        },
-        createCipheriv: () => {
-            throw new Error('Crypto module not available.');
-        },
-        createDecipheriv: () => {
-            throw new Error('Crypto module not available.');
-        },
-    };
+async function initSecretKey() {
+  const encoder = new TextEncoder();
+  const passphraseData = encoder.encode(String(PASSPHRASE));
+  
+  // Hash the passphrase using SHA-256
+  const hashBuffer = await crypto.subtle.digest('SHA-256', passphraseData);
+  
+  // Import the key for AES-CBC use
+  return crypto.subtle.importKey(
+    'raw',
+    hashBuffer.slice(0, 32), // Take first 32 bytes (256 bits)
+    { name: 'AES-CBC' },
+    false, // not extractable
+    ['encrypt', 'decrypt'] // usages
+  );
 }
 
-const secretKey = crypto.createHash('sha256').update(
-    String(PASSPHRASE)
-).digest('base64').substr(0, 32);
+// Initialize the secret key
+secretKeyPromise = initSecretKey();
 
+// These bcrypt functions remain unchanged
 export function hashPassword(password: string): string {
-    return hashSync(password, SALT_ROUNDS);
+  return hashSync(password, SALT_ROUNDS);
 }
 
-export function verifyPassword(password: string, hash: string): boolean{
-    return compareSync(password, hash);
+export function verifyPassword(password: string, hash: string): boolean {
+  return compareSync(password, hash);
 }
 
-export function encryptString(text: string): string {
-    const iv = crypto.randomBytes(16); // Initialization vector
-    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(secretKey), iv);
-    const encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
-    // Return the IV and encrypted data as a combined string
-    return iv.toString('hex') + ':' + encrypted.toString('hex');
+// Modified to use Web Crypto API
+export async function encryptString(text: string): Promise<string> {
+  const secretKey = await secretKeyPromise;
+  
+  // Generate a random IV
+  const iv = crypto.getRandomValues(new Uint8Array(16));
+  
+  // Encode the text
+  const encoder = new TextEncoder();
+  const data = encoder.encode(text);
+  
+  // Encrypt the data
+  const encryptedBuffer = await crypto.subtle.encrypt(
+    {
+      name: 'AES-CBC',
+      iv: iv
+    },
+    secretKey,
+    data
+  );
+  
+  // Convert to hex strings
+  const ivHex = Array.from(iv)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+    
+  const encryptedHex = Array.from(new Uint8Array(encryptedBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+  
+  // Return the combined string
+  return `${ivHex}:${encryptedHex}`;
 }
 
-export function decrypt(encryptedData: string): string {
-    const textParts = encryptedData.split(':');
-    const iv = Buffer.from(textParts.shift()!, 'hex');
-    const encryptedText = Buffer.from(textParts.join(':'), 'hex');
-    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(secretKey), iv);
-    const decrypted = Buffer.concat([decipher.update(encryptedText), decipher.final()]);
-    return decrypted.toString('utf8');
+export async function decrypt(encryptedData: string): Promise<string> {
+  const secretKey = await secretKeyPromise;
+  
+  // Split the IV and encrypted data
+  const textParts = encryptedData.split(':');
+  const ivHex = textParts.shift()!;
+  const encryptedHex = textParts.join(':');
+  
+  // Convert from hex strings to Uint8Arrays
+  const iv = new Uint8Array(ivHex.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
+  const encryptedArray = new Uint8Array(encryptedHex.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
+  
+  // Decrypt the data
+  const decryptedBuffer = await crypto.subtle.decrypt(
+    {
+      name: 'AES-CBC',
+      iv: iv
+    },
+    secretKey,
+    encryptedArray
+  );
+  
+  // Decode the result back to a string
+  const decoder = new TextDecoder();
+  return decoder.decode(decryptedBuffer);
 }

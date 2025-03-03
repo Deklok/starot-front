@@ -24,7 +24,7 @@ export const actions = {
             if (!resultLogin) {
                 return fail(401);
             }
-            cookies.set('session', encryptString(
+            cookies.set('session', await encryptString(
                 JSON.stringify(resultLogin)
             ) , {
                 maxAge: 31536000, // 1 day
