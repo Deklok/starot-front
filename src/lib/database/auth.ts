@@ -1,8 +1,31 @@
-import { hashSync, compareSync } from 'bcrypt';
-import * as crypto from 'crypto';
+import { hashSync, compareSync } from 'bcryptjs';
 import { PASSPHRASE } from '$env/static/private';
 
 const SALT_ROUNDS = 6;
+
+let crypto: any;
+
+if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+    // Node.js environment (build time or Cloudflare Workers)
+    crypto = await import('node:crypto');
+} else {
+    // Browser or other environment (shouldn't be reached in production)
+    console.warn('Crypto module not available in this environment.');
+    crypto = {
+        createHash: () => {
+            throw new Error('Crypto module not available.');
+        },
+        randomBytes: () => {
+            throw new Error('Crypto module not available.');
+        },
+        createCipheriv: () => {
+            throw new Error('Crypto module not available.');
+        },
+        createDecipheriv: () => {
+            throw new Error('Crypto module not available.');
+        },
+    };
+}
 
 const secretKey = crypto.createHash('sha256').update(
     String(PASSPHRASE)
