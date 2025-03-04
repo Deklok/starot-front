@@ -4,7 +4,7 @@
 	import FolderView from "$lib/components/FolderView.svelte";
 	import ImageView from "$lib/components/ImageView.svelte";
 
-    let loadedData: any = $state(page.data);
+    let loadedData: any = $derived(page.data);
     let type = $derived(page.data.type);
 </script>
 
