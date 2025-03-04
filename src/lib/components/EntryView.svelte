@@ -68,6 +68,7 @@ title={selectedImage.title} bind:open={showModal} autoclose outsideclose>
                 <div class="text-white text-lg my-6">{@html section.content}</div>
             {/each}
         </div>
+        {#if parsedImages.length > 0}
         <div class="py-12">
             <div class="cursor-pointer" onclick={openModal}>
                 <Carousel imgClass="full-screen-viewable" class="my-3" images={parsedImages} {forward} let:Indicators let:Controls bind:index>
@@ -82,5 +83,6 @@ title={selectedImage.title} bind:open={showModal} autoclose outsideclose>
                 </Thumbnails>
             </div>
         </div>
+        {/if}
     </main>
 </div>

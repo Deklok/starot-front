@@ -9,6 +9,7 @@
 	import { page } from '$app/state';
 	import Notification from '$lib/components/Notification.svelte';
 	import Loading from '$lib/components/Loading.svelte';
+	import MobileDrawer from '$lib/components/MobileDrawer.svelte';
 
 	const { username, isLoggedIn, worlds } = page.data;
 
@@ -80,5 +81,9 @@
 		</main>
 		<Notification />
 	</div>
+
+	<div class="md:hidden">
+        <MobileDrawer {isLoggedIn} {username} {worlds} />
+    </div>
 </div>
 <Loading></Loading>

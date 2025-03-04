@@ -5,18 +5,19 @@
 	import ImageView from "$lib/components/ImageView.svelte";
 
     let loadedData: any = $state(page.data);
+    let type = $derived(page.data.type);
 </script>
 
 <div>
-    {#if loadedData.type === 'folder'}
+    {#if type === 'folder'}
         <FolderView {...loadedData}></FolderView>
     {/if}
 
-    {#if loadedData.type === 'image'}
+    {#if type === 'image'}
         <ImageView {...loadedData}></ImageView>
     {/if}
 
-    {#if loadedData.type === 'entry'}
+    {#if type === 'entry'}
         <EntryView {...loadedData}></EntryView>
     {/if}
 </div>
