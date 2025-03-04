@@ -17,6 +17,7 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { formatStringForURL } from '$lib/utils/formatUrl';
+	import { isLoading } from '$lib/stores/loading';
 
 	let  { entryData = $bindable(), uniqueName } = $props<{
 		entryData: EntryViewData,
@@ -82,6 +83,8 @@
 	}
 
 	async function saveChanges() {
+		isLoading.set(true);
+		console.log('entered save entry');
 		const formData = new FormData();
 
 		if (!imgFile) {
@@ -109,6 +112,8 @@
             body: formData,
         });
 
+		isLoading.set(false);
+		console.log('ended thing');
 		goto(`/${worldUniqueName}/${formatStringForURL(entryName)}`);
 	}
 
