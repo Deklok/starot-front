@@ -1,10 +1,24 @@
 <script lang="ts">
+	import { applyAction, enhance } from "$app/forms";
+	import { goto } from "$app/navigation";
+	import { isLoading } from "$lib/stores/loading";
 	import { Button, FloatingLabelInput } from "flowbite-svelte";
 </script>
 
 <div class="w-full md:w-[50%] justify-self-center">
 	<!-- Login Form -->
 	<form class="flex flex-col justify-center"
+	use:enhance={() => {
+		isLoading.set(true);
+		return async({ result }) => {
+			isLoading.set(false);
+			if (result.type === 'redirect') {
+				goto(result.location);
+			} else {
+				await applyAction(result);
+			}
+		}
+	}}
 	method="POST" action="?/login">
 		<div class="m-3">
 			<FloatingLabelInput id="username" name="username"

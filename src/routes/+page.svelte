@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { applyAction, enhance } from "$app/forms";
+	import { goto, invalidateAll } from "$app/navigation";
 	import { page } from "$app/state";
 	import { isLoading } from '$lib/stores/loading';
 	import { Button, Card, FloatingLabelInput, Modal } from "flowbite-svelte";
@@ -31,6 +33,17 @@
 <Modal classBody="flex justify-center"
 title="Nuevo mundo" bind:open={newWorldModal} outsideclose>
 	<form method="POST" action="?/newWorld"
+	use:enhance={() => {
+		isLoading.set(true);
+		return async({ result }) => {
+			isLoading.set(false);
+			if (result.type === 'redirect') {
+				goto(result.location);
+			} else {
+				await applyAction(result);
+			}
+		}
+	}}
 	class="flex flex-col self-center justify-center w-[90%]">
 		<FloatingLabelInput class="mb-4 self-center"
 		id="newWorldName" name="newWorldName" type="text">

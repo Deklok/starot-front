@@ -66,7 +66,6 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
 
 export const actions: Actions = {
     newEntry: async ({ request, platform, locals, url }) => {
-        isLoading.set(true);
         const world = get(currentWorld);
 
         if (world === null || !locals.userId) {
@@ -144,8 +143,7 @@ export const actions: Actions = {
                 content: s.content
             }))
         });
-
-        isLoading.set(false);
+        
         return redirect(303, `${world.uniqueName}/${entryUniqueName}`);
     }
 }
