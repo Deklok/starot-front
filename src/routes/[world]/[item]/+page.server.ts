@@ -10,11 +10,12 @@ import { currentWorld } from "$lib/stores/world";
 import { getWorldByUniqueName } from "$lib/database/world";
 import { formatStringForURL } from "$lib/utils/formatUrl";
 import { uploadFile } from "$lib/images/r2";
+import { isLoading } from "$lib/stores/loading";
 
 var currentItem: Item | null = null;
 
 export const load: PageServerLoad = async ({ params, url, platform, cookies }) => {
-   
+    isLoading.set(true);
     // @ts-ignore
     const worldUniqueName: string = params.world; 
 
@@ -164,11 +165,13 @@ export const load: PageServerLoad = async ({ params, url, platform, cookies }) =
     console.log('returning from page.server ',
         {...finalResponse, type: typeItem}
     );
+    isLoading.set(false);
     return {...finalResponse, type: typeItem, currentId: currentItem?.id };
 }
 
 export const actions: Actions = {
     newFolder: async ({ request, platform, locals }) => {
+        isLoading.set(true);
         const world = get(currentWorld);
 
         if (!world || !locals.userId || !currentItem) {
@@ -200,9 +203,11 @@ export const actions: Actions = {
         });
         await associateTagsToItem(DB, itemId, tags.map((tag: any) => tag.name ));
         
+        isLoading.set(false);
         return { success: true };
     },
     newImage: async ({ request, platform, locals }) => {
+        isLoading.set(true);
         const world = get(currentWorld);
 
         if (world === null || !locals.userId || !currentItem) {
@@ -242,6 +247,7 @@ export const actions: Actions = {
 
         await createImage(DB, itemId, finalImagePath);
 
+        isLoading.set(false);
         return { success: true }
     }
 }

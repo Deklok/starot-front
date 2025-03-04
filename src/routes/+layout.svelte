@@ -8,6 +8,7 @@
 	import { ArrowLeftOutline, BarsOutline, CloseOutline, PaperClipOutline } from 'flowbite-svelte-icons';
 	import { page } from '$app/state';
 	import Notification from '$lib/components/Notification.svelte';
+	import Loading from '$lib/components/Loading.svelte';
 
 	const { username, isLoggedIn, worlds } = page.data;
 
@@ -80,3 +81,4 @@
 		<Notification />
 	</div>
 </div>
+<Loading></Loading>

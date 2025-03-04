@@ -28,7 +28,6 @@ export const actions = {
         if (!userId) {
             throw new Error('userId not found to create world');
         }
-
         isLoading.set(true);
 
         const data = await request.formData();

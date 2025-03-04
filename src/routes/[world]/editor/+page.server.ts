@@ -8,6 +8,7 @@ import { formatStringForURL } from "$lib/utils/formatUrl";
 import { uploadFile } from "$lib/images/r2";
 import { createEntry } from "$lib/database/entry";
 import { associateTagsToItem } from "$lib/database/tags";
+import { isLoading } from "$lib/stores/loading";
 
 var parentId: number | null = null;
 
@@ -65,6 +66,7 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
 
 export const actions: Actions = {
     newEntry: async ({ request, platform, locals, url }) => {
+        isLoading.set(true);
         const world = get(currentWorld);
 
         if (world === null || !locals.userId) {
@@ -130,22 +132,20 @@ export const actions: Actions = {
             itemId,
             name,
             image: mainEntryImage,
-            attributes: profileSections.map((a: any, i: number) => ({
+            attributes: profileSections.map((a: any) => ({
                 label: a.label,
-                value: a.value,
-                displayOrder: i
+                value: a.value
             })),
             images: entryImagesUrl.map((img, i) => ({
-                filePath: img,
-                displayOrder: i
+                filePath: img
             })),
-            sections: sections.map((s: any, i: number) => ({
+            sections: sections.map((s: any) => ({
                 title: s.title,
-                content: s.content,
-                displayOrder: i
+                content: s.content
             }))
         });
 
+        isLoading.set(false);
         return redirect(303, `${world.uniqueName}/${entryUniqueName}`);
     }
 }

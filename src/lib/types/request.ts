@@ -1,18 +1,15 @@
 interface EntrySectionRequest {
     title: string;
     content: string;
-    displayOrder: number;
 }
 
 interface EntryAttributeRequest {
     label: string;
     value: string;
-    displayOrder: number;
 }
 
 interface EntryImageRequest {
     filePath: string;
-    displayOrder: number;
 }
 
 interface EntryRequest {

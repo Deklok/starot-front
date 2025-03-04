@@ -10,8 +10,10 @@ import { createImage } from "$lib/database/image";
 import { associateTagsToItem } from "$lib/database/tags";
 import { currentWorld } from "$lib/stores/world";
 import { get } from "svelte/store";
+import { isLoading } from "$lib/stores/loading";
 
 export const load: PageServerLoad = async ({ params, url, platform, cookies }) => {
+    isLoading.set(true);
     // @ts-ignore
     const worldUniqueName: string = params.world; 
 
@@ -62,6 +64,7 @@ export const load: PageServerLoad = async ({ params, url, platform, cookies }) =
         }
     });
     
+    isLoading.set(false);
     const folderData: FolderData = {
         name: world.name,
         folders,
@@ -74,6 +77,7 @@ export const load: PageServerLoad = async ({ params, url, platform, cookies }) =
 
 export const actions: Actions = {
     newFolder: async ({ request, platform, locals, params }) => {
+        isLoading.set(true);
         const world = get(currentWorld);
 
         if (!world || !locals.userId) {
@@ -104,9 +108,11 @@ export const actions: Actions = {
         });
         await associateTagsToItem(DB, itemId, tags.map((tag: any) => tag.name ));
         
+        isLoading.set(false);
         return { success: true };
     },
     newImage: async ({ request, platform, locals }) => {
+        isLoading.set(true);
         const world = get(currentWorld);
 
         if (world === null || !locals.userId) {
@@ -145,6 +151,7 @@ export const actions: Actions = {
 
         await createImage(DB, itemId, finalImagePath);
 
+        isLoading.set(false);
         return { success: true }
     }
 }
