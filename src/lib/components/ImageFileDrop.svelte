@@ -48,7 +48,7 @@
 	}}
 	on:change={handleChange}
 >
-	{#if value === null}
+	{#if value === null && imgUrl === null}
 		<svg
 		aria-hidden="true"
 		class="mb-3 h-10 w-10 text-gray-400"

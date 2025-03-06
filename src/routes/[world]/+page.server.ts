@@ -1,9 +1,7 @@
 import { getWorldByUniqueName, getWorldItems } from "$lib/database/world";
 import type { Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import { createRootFolder } from "$lib/database/folder";
 import { uploadFile } from "$lib/images/r2";
-import { IMAGES_BASE_URL } from "$env/static/private";
 import { createItem } from "$lib/database/item";
 import { formatStringForURL } from "$lib/utils/formatUrl";
 import { createImage } from "$lib/database/image";

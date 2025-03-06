@@ -14,7 +14,7 @@ import { isLoading } from "$lib/stores/loading";
 
 var currentItem: Item | null = null;
 
-export const load: PageServerLoad = async ({ params, url, platform, cookies }) => {
+export const load: PageServerLoad = async ({ params, url, platform, locals }) => {
     isLoading.set(true);
     // @ts-ignore
     const worldUniqueName: string = params.world; 
@@ -33,7 +33,7 @@ export const load: PageServerLoad = async ({ params, url, platform, cookies }) =
         currentWorld.set(world);
     }
 
-
+    const canEdit = world.userId === locals.userId;
     const typeItem = url.searchParams.get('type') || 'entry';
     const parentIdParam = url.searchParams.get('parentId');
     let parentId = (parentIdParam) ? Number(parentIdParam) : undefined;
@@ -166,7 +166,7 @@ export const load: PageServerLoad = async ({ params, url, platform, cookies }) =
         {...finalResponse, type: typeItem}
     );
     isLoading.set(false);
-    return {...finalResponse, type: typeItem, currentId: currentItem?.id };
+    return {...finalResponse, type: typeItem, currentId: currentItem?.id, canEdit };
 }
 
 export const actions: Actions = {

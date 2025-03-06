@@ -39,6 +39,14 @@ export async function associateTagsToItem(
     }
 }
 
+export async function updateItemTags(
+    db: D1Database,
+    entryId: number,
+    tags: string[]
+): Promise<void> {
+    
+}
+
 export async function getItemTags(
     db: D1Database,
     itemId: number

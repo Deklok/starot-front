@@ -8,7 +8,7 @@ import { formatStringForURL } from "$lib/utils/formatUrl";
 import { uploadFile } from "$lib/images/r2";
 import { createEntry } from "$lib/database/entry";
 import { associateTagsToItem } from "$lib/database/tags";
-import { isLoading } from "$lib/stores/loading";
+import { generateRandomId } from "$lib/utils/randomId";
 
 var parentId: number | null = null;
 
@@ -121,7 +121,7 @@ export const actions: Actions = {
         await Promise.all(entryImages.map( async (image, index) => {
             const imgUrl = await uploadFile(
                 R2BUCKET,
-                `${world.uniqueName}/${entryUniqueName}/${entryUniqueName}-${index + 1}`,
+                `${world.uniqueName}/${entryUniqueName}/${generateRandomId()}`,
                 image
             );
             entryImagesUrl.push(imgUrl);

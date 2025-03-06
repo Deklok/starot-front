@@ -56,3 +56,11 @@ export async function createEntry(
         throw new Error(`error on create entry`);
     }
 }
+
+export async function updateEntry(
+    dbInput: D1Database,
+    entryId: number,
+    entry: Omit<EntryRequest, 'itemId'>
+): Promise<void> {
+
+}

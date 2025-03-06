@@ -1,9 +1,10 @@
 <script lang="ts">
-    import CustomSideBar from '$lib/components/CustomSideBar.svelte';
+	import { page } from '$app/state';
 	import { capitalizeFirstLetter } from '$lib/utils/stringFormat';
-	import { Badge, Card, Carousel, Modal, Table, TableBody, TableBodyCell, TableBodyRow, Thumbnails } from 'flowbite-svelte';
+	import { A, Badge, Button, Card, Carousel, Modal, Table, TableBody, TableBodyCell, TableBodyRow, Thumbnails } from 'flowbite-svelte';
+	import { EditOutline } from 'flowbite-svelte-icons';
 
-    let { name, tags, images, sections, profileSections, entryImage } = $props();
+    let { name, tags, images, sections, profileSections, entryImage, canEdit } = $props();
     
     const parsedImages = images.map((image: any) => ({
         alt: image.name,
@@ -11,7 +12,6 @@
         title: image.name
     }));
     const profileImage = entryImage;
-    //const description = dataLoaded.description;
     
     let index = $state(0);
     let forward = $state(true);
@@ -24,6 +24,8 @@
             showModal = true;
         }
     }
+    const itemRoute = page.url.href.split('/');
+    const editLink = `/${itemRoute[3]}/editor/${itemRoute[4]}`;
 </script>
 
 {#if selectedImage}
@@ -40,7 +42,13 @@ title={selectedImage.title} bind:open={showModal} autoclose outsideclose>
 <div class="flex w-full">
 	<main class="w-full flex flex-wrap justify-center">
         <div class="prose lg:prose-xl text-white">
-            <h1 class="text-4xl font-bold mb-4">{name}</h1>
+            <h1 class="text-4xl font-bold mb-4">{name}
+                {#if canEdit}
+                    <Button class="mx-2" href={editLink} color="dark">
+                        <EditOutline></EditOutline>
+                    </Button>
+                {/if}
+            </h1>
             {#each tags as tag}
                 <Badge class="mx-2 mt-6" href={tag.url} large color="dark" border>
                     {capitalizeFirstLetter(tag.name)} 

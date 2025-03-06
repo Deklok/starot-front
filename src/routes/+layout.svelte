@@ -20,7 +20,7 @@
 	
 	// Handle window resize
 	function handleResize() {
-		$sidebarOpen = window.innerWidth >= 768;
+		$sidebarOpen = window.innerWidth >= 1300;
 	}
 	
 	onMount(() => {
