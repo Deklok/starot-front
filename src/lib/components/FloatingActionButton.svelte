@@ -7,7 +7,7 @@
     
     // Options to display when FAB is clicked
     const options = [
-      { id: 'folder', label: 'Folder' },
+      { id: 'folder', label: 'Carpeta' },
       { id: 'entry', label: 'Articulo' },
       { id: 'image', label: 'Imagen' }
     ];

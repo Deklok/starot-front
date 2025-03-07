@@ -6,10 +6,24 @@
 	import { Button, Card, FloatingLabelInput, Modal } from "flowbite-svelte";
 	import { GlobeSolid, PlusOutline } from "flowbite-svelte-icons";
 
-	const { worlds, isLoggedIn } = page.data;
+	const { worlds, isLoggedIn, userWorlds } = page.data;
 	let newWorldModal = $state(false);
 </script>
 
+{#if userWorlds.length > 0}
+<div class="mb-3 text-white flex justify-center text-4xl"> Mis mundos </div>
+<div class="flex w-full flex-wrap items-center justify-center">
+	{#each userWorlds as  world}
+		<Card href={world.uniqueName}
+		class="w-full md:w-1/2 lg:w-1/3 mx-2 my-2 text-white flex-wrap
+		flex text-center items-center gap-2">
+			<GlobeSolid></GlobeSolid>
+			{world.name}
+		</Card>
+	{/each}
+</div>
+<hr class="my-4 border-slate-600">
+{/if}
 <div class="flex w-full flex-wrap items-center justify-center">
 	{#each worlds as  world}
 		<Card href={world.uniqueName}

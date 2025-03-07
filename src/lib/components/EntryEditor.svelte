@@ -127,8 +127,8 @@
 			formData.append(`image`, imgUrl as string);
 		}
 		
-		formData.append(`profile_sections`, JSON.stringify(profileSections));
-		formData.append(`sections`, JSON.stringify(sections));
+		formData.append(`profile_sections`, JSON.stringify(parsedProfileSections));
+		formData.append(`sections`, JSON.stringify(parsedSections));
 
 		parsedImages.forEach((image, index) => {
 			if (image.file) {
@@ -138,15 +138,12 @@
 			}
 		});
 
-		const worldUniqueName = page.params.world;
-
 		await fetch('?/newEntry', {
 			method: 'POST',
 			body: formData
 		});
 
 		isLoading.set(false);
-		goto(`/${worldUniqueName}/${formatStringForURL(entryName)}`);
 	}
 
 	const beginDeleteCharacter = () => {

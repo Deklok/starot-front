@@ -16,6 +16,7 @@
 	export let username: string;
 	export let isLoggedIn: boolean;
 	export let worlds: World[];
+	export let userWorlds: World[];
 </script>
 
 <!-- Sidebar with fixed positioning and dark theme to match your screenshot -->
@@ -25,7 +26,7 @@
 	<FlowbiteSidebar class="h-full">
 		<SidebarWrapper class="!bg-slate-800 text-white h-full">
 			<!-- User Profile Section -->
-			<div class="p-4 border-b border-gray-700">
+			<div class="p-4 border-gray-700">
 				<div class="flex items-center space-x-4">
 					<div class="font-medium">
 						<div class="text-white text-2xl">{username}</div>
@@ -35,15 +36,29 @@
 					</div>
 				</div>
 			</div>
-
-			<!-- Navigation items with dark theme styling -->
+			
+			<!-- Sidebar Navigation -->
 			<SidebarGroup>
 				<SidebarItem label="Home" href={`/`}
 				activeClass="bg-gray-700" class="text-white hover:bg-gray-700">
 					<svelte:fragment slot="icon">
 						<HomeSolid class="text-gray-300" />
 					</svelte:fragment>
-				</SidebarItem>					
+				</SidebarItem>		
+			</SidebarGroup>
+			<SidebarGroup border>
+				<div class="py-3 px-2 text-gray-300">Mis mundos</div>
+				{#each userWorlds as world}
+				<SidebarItem label={world.name} href={`/${world.uniqueName}`}
+				activeClass="bg-gray-700" class="text-white hover:bg-gray-700">
+					<svelte:fragment slot="icon">
+						<GlobeSolid class="text-gray-300" />
+					</svelte:fragment>
+				</SidebarItem>	
+				{/each}
+			</SidebarGroup>			
+			<SidebarGroup border>							
+				<div class="py-3 px-2 text-gray-300">Otros mundos</div>
 				{#each worlds as world}
 				<SidebarItem label={world.name} href={`/${world.uniqueName}`}
 				activeClass="bg-gray-700" class="text-white hover:bg-gray-700">

@@ -7,6 +7,7 @@
 	export let username: string;
 	export let isLoggedIn: boolean;
 	export let worlds: World[];
+	export let userWorlds: World[];
 
     let transitionParams = {
         x: -320,
@@ -40,6 +41,22 @@ placement="left" backdrop={false} activateClickOutside={false}>
 						/>
 					</svelte:fragment>
 				</SidebarItem>
+			</SidebarGroup>
+			<SidebarGroup border>
+				<div class="py-3 px-2 text-gray-300">Mis mundos</div>
+				{#each userWorlds as world}
+					<SidebarItem onclick={() => ($sidebarOpen = false)}
+                    label={world.name} href={`/${world.uniqueName}`} activeClass="bg-gray-700">
+						<svelte:fragment slot="icon">
+							<GlobeSolid
+								class="h-5 w-5 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
+							/>
+						</svelte:fragment>
+					</SidebarItem>
+				{/each}
+			</SidebarGroup>
+			<SidebarGroup border>
+				<div class="py-3 px-2 text-gray-300">Otros mundos</div>
 				{#each worlds as world}
 					<SidebarItem onclick={() => ($sidebarOpen = false)}
                     label={world.name} href={`/${world.uniqueName}`} activeClass="bg-gray-700">

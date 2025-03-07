@@ -2,7 +2,7 @@ import { getEntry } from "$lib/database/entry";
 import { getFolderItems } from "$lib/database/folder";
 import { getImageForItem, createImage } from "$lib/database/image";
 import { getItem, createItem } from "$lib/database/item";
-import { getItemTags, associateTagsToItem } from "$lib/database/tags";
+import { getItemTags, associateTagsToItem, updateItemTags } from "$lib/database/tags";
 import type { Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { get } from "svelte/store";
@@ -49,6 +49,7 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
                 parentId
             );
             currentItem = currentFolder;
+            const folderTags = await getItemTags(DB, currentFolder.id);
             const folderItems = await getFolderItems(
                 DB, 
                 world.id,
@@ -91,6 +92,10 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
             
             const folderData: FolderData = {
                 name: currentFolder.name,
+                tags: folderTags.map((tag) => ({
+                    name: tag,
+                    url: `/search?tag=${tag}`
+                })),
                 folders,
                 images,
                 entries
@@ -107,8 +112,8 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
                 'image',
                 parentId
             );
-            const imageTags = await getItemTags(DB, currentItem.id);
             const imageUrl = await getImageForItem(DB, currentItem.id);
+            const imageTags = await getItemTags(DB, currentItem.id);
             const imageData: ImageResponseData = {
                 name: currentItem.name,
                 imageUrl,
@@ -171,7 +176,6 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
 
 export const actions: Actions = {
     newFolder: async ({ request, platform, locals }) => {
-        isLoading.set(true);
         const world = get(currentWorld);
 
         if (!world || !locals.userId || !currentItem) {
@@ -203,11 +207,9 @@ export const actions: Actions = {
         });
         await associateTagsToItem(DB, itemId, tags.map((tag: any) => tag.name ));
         
-        isLoading.set(false);
         return { success: true };
     },
     newImage: async ({ request, platform, locals }) => {
-        isLoading.set(true);
         const world = get(currentWorld);
 
         if (world === null || !locals.userId || !currentItem) {
@@ -247,7 +249,30 @@ export const actions: Actions = {
 
         await createImage(DB, itemId, finalImagePath);
 
-        isLoading.set(false);
+        return { success: true }
+    },
+    updateTags: async ({ request, platform, locals }) => {
+        const world = get(currentWorld);
+
+        if (world === null || !locals.userId || !currentItem) {
+            throw new Error('necessary variables not set on action');
+        }
+
+        if (world.userId !== locals.userId) {
+            throw new Error('no permissions to create here for the user');
+        }
+    
+        if (!platform) {
+            throw new Error('no platform loaded');
+        }
+        
+        const DB = platform.env.DB;
+
+        const data = await request.formData();
+        const tags = JSON.parse(data.get('tags') as string || '[]');
+
+        await updateItemTags(DB, currentItem.id, tags.map((tag: any) => tag.name ));
+
         return { success: true }
     }
 }

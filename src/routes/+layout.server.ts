@@ -1,4 +1,3 @@
-import { selectUserById } from "$lib/database/user";
 import { getWorlds } from "$lib/database/world";
 import type { LayoutServerLoad } from "./$types";
 
@@ -12,8 +11,6 @@ export const load: LayoutServerLoad =  async ({
     let username = 'Invitado';
     let isLoggedIn = false;
     if (locals.userId) {
-
-        //const user = await selectUserById(DB, locals.userId);
         username = locals.username as string;
         isLoggedIn = true;
     }
@@ -21,9 +18,13 @@ export const load: LayoutServerLoad =  async ({
     const DB = platform.env.DB;
     const worlds = await getWorlds(DB);
 
+    const userWorlds = worlds.filter(world => world.userId === locals.userId);
+    const otherWorlds = worlds.filter(world => world.userId !== locals.userId);
+
     return {
         username,
         isLoggedIn,
-        worlds
+        userWorlds,
+        worlds: otherWorlds
     };
 }

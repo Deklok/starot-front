@@ -62,5 +62,17 @@ export async function updateEntry(
     entryId: number,
     entry: Omit<EntryRequest, 'itemId'>
 ): Promise<void> {
-
+    db = dbInput;
+    await db.prepare(`
+        UPDATE entry
+        SET name = ?, image_url = ?, attributes = ?, images = ?, sections = ?
+        WHERE id = ?
+    `).bind(
+        entry.name,
+        entry.image,
+        JSON.stringify(entry.attributes),
+        JSON.stringify(entry.images),
+        JSON.stringify(entry.sections),
+        entryId
+    ).run();
 }

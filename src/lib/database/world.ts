@@ -5,7 +5,11 @@ import type { D1Database } from "@cloudflare/workers-types";
 export async function getWorlds(
     db: D1Database
 ): Promise<World[]> {
-    const result = await db.prepare('SELECT * FROM world')
+    const result = await db.prepare(`
+        SELECT world.*, user.username as createdBy 
+        FROM world
+        INNER JOIN user ON user.id = world.user_id
+        `)
         .all();
 
     const worlds = result.results;

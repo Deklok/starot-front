@@ -11,6 +11,7 @@ interface LinkItem {
 
 interface FolderData  {
     name: string;
+    tags?: CustomTag[];
     folders: LinkItem[];
     images: PreviewData[];
     entries: PreviewData[];

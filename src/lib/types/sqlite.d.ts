@@ -16,6 +16,7 @@ interface World {
     uniqueName: string;
     userId: number;
     createdAt: string;
+    createdBy?: string;
 }
 
 interface Item {

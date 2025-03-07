@@ -10,6 +10,7 @@ import { uploadFile } from "$lib/images/r2";
 import { generateRandomId } from "$lib/utils/randomId";
 
 var entryId: number | null = null;
+var itemId: number | null = null;
 
 export const load: PageServerLoad = async ({ params, url, platform, locals }) => {
     const worldUniqueName = params.world;
@@ -48,6 +49,7 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
         item.id
     );
     entryId = entry.id;
+    itemId = item.id;
 
     const entryData: EntryViewData = {
         name: entry.name,
@@ -71,7 +73,7 @@ export const actions: Actions = {
     newEntry: async ({ request, platform, locals, params }) => {
         const world = get(currentWorld);
 
-        if (world === null || !locals.userId || !entryId) {
+        if (world === null || !locals.userId || !entryId || !itemId) {
             throw new Error('necessary variables not set on action');
         }
 
@@ -87,7 +89,6 @@ export const actions: Actions = {
         const R2BUCKET = platform.env.BUCKET;
 
         const data = await request.formData();
-
 
         const name = data.get('name') as string;
         const tags = JSON.parse(data.get('tags') as string || '[]');
@@ -108,7 +109,7 @@ export const actions: Actions = {
         const entryUniqueName: string = params.entry as string;
         let mainEntryImage: string = '';
 
-        await updateItemTags(DB, entryId, tags.map((tag: any) => tag.name ));
+        await updateItemTags(DB, itemId, tags.map((tag: any) => tag.name ));
 
         if (imgFile instanceof File) {
             // Upload images from the entry
@@ -149,6 +150,6 @@ export const actions: Actions = {
                 title: s.title,
                 content: s.content
             }))
-        });
+        });        
     }
 }

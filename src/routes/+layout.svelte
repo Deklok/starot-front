@@ -11,7 +11,7 @@
 	import Loading from '$lib/components/Loading.svelte';
 	import MobileDrawer from '$lib/components/MobileDrawer.svelte';
 
-	const { username, isLoggedIn, worlds } = page.data;
+	const { username, isLoggedIn, worlds, userWorlds } = page.data;
 
 	// Toggle sidebar function
 	function toggleSidebar() {
@@ -39,7 +39,7 @@
 
 <div class="flex h-screen overflow-hidden" data-sveltekit-preload-data="false">
 	<!-- Sidebar -->
-	<UserSideBar {isLoggedIn} {username} {worlds} />
+	<UserSideBar {isLoggedIn} {username} {worlds} {userWorlds} />
 
 	<!-- Main content - takes full width when sidebar is closed -->
 	<div class="z-40 flex flex-col flex-1 w-full transition-all duration-300 ease-in-out 
@@ -83,7 +83,7 @@
 	</div>
 
 	<div class="md:hidden">
-        <MobileDrawer {isLoggedIn} {username} {worlds} />
+        <MobileDrawer {isLoggedIn} {username} {worlds} {userWorlds} />
     </div>
 </div>
 <Loading></Loading>

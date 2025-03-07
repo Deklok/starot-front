@@ -1,51 +1,53 @@
 <script lang="ts">
-	import { Button, Card, FloatingLabelInput, Modal } from 'flowbite-svelte';
+	import { Badge, Button, Card, FloatingLabelInput, Modal } from 'flowbite-svelte';
 	import FloatingActionButton from './FloatingActionButton.svelte';
 	import { page } from '$app/state';
-	import { isLoading } from '$lib/stores/loading';	
+	import { isLoading } from '$lib/stores/loading';
 	import TagEditor from './TagEditor.svelte';
 	import ImageFileDrop from './ImageFileDrop.svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { notification } from '$lib/stores/notification';
+	import { capitalizeFirstLetter } from '$lib/utils/stringFormat';
+	import { EditOutline } from 'flowbite-svelte-icons';
 
-	let { 
-		isLoggedIn
-	} = page.data;
+	let { isLoggedIn, canEdit } = page.data;
 
 	let parentId = $derived(page.data.parentId);
+	let folderName = $derived(page.data.name);
 	let folders = $derived(page.data.folders);
 	let images = $derived(page.data.images);
-	let entries  = $derived(page.data.entries);
+	let entries = $derived(page.data.entries);
 	let currentId = $derived(page.data.currentId);
 
 	let newFolderModal = $state(false);
 	let newImageModal = $state(false);
-	let tags = $state([]);
+	let tags = $state(page.data.tags);
 	let imgFile: File | null = $state(null);
 	let imgUrl: string | null = $state(null);
-	
+	let editMode = $state(false);
+
 	function handleOptionSelect(optionId: string) {
 		const selectedOption = optionId;
-		
-		switch (selectedOption) {
-		case 'folder':
-			// Handle folder creation
-			newFolderModal = true;
-			break;
-		case 'entry':
-			// Handle entry creation
-			const worldUniqueName = page.params.world;
-			let redirectUrl = `/${worldUniqueName}/editor`;
-			if (currentId) {
-				redirectUrl = `${redirectUrl}?parentId=${currentId}`
-			}
-			goto(redirectUrl);
-			break;
 
-		case 'image':
-			// Handle image upload
-			newImageModal = true;
-			break;
+		switch (selectedOption) {
+			case 'folder':
+				// Handle folder creation
+				newFolderModal = true;
+				break;
+			case 'entry':
+				// Handle entry creation
+				const worldUniqueName = page.params.world;
+				let redirectUrl = `/${worldUniqueName}/editor`;
+				if (currentId) {
+					redirectUrl = `${redirectUrl}?parentId=${currentId}`;
+				}
+				goto(redirectUrl);
+				break;
+
+			case 'image':
+				// Handle image upload
+				newImageModal = true;
+				break;
 		}
 	}
 
@@ -54,52 +56,96 @@
 	}
 
 	async function handleImageSubmit(event: SubmitEvent) {
-        event.preventDefault();
-		
+		event.preventDefault();
+
 		if (!imgFile) {
-            return;
-        }
+			return;
+		}
 
-        const form = event.target as HTMLFormElement;
-        const formData = new FormData(form);
+		const form = event.target as HTMLFormElement;
+		const formData = new FormData(form);
 
-        formData.append('image', imgFile); // Append the File object
+		formData.append('image', imgFile); // Append the File object
 
-        await fetch(form.action, {
-            method: 'POST',
-            body: formData,
-        });
+		await fetch(form.action, {
+			method: 'POST',
+			body: formData
+		});
 
 		notification.open(`Imagen creada`, false);
 		newImageModal = false;
 		reloadPage();
-    }
+	}
 
 	async function handleFolderSubmit(event: SubmitEvent) {
-        event.preventDefault();
+		event.preventDefault();
 
-        const form = event.target as HTMLFormElement;
-        const formData = new FormData(form);
+		const form = event.target as HTMLFormElement;
+		const formData = new FormData(form);
 
-        await fetch(form.action, {
-            method: 'POST',
-            body: formData,
-        });
+		await fetch(form.action, {
+			method: 'POST',
+			body: formData
+		});
 
-		notification.open(`Folder creado`, false);
+		notification.open(`Carpeta creado`, false);
 		newFolderModal = false;
 		reloadPage();
+	}
+
+	async function updateTags() {
+        isLoading.set(true);
+        const formData = new FormData();
+        formData.append(`tags`, JSON.stringify(tags));
+
+        await fetch('?/updateTags', {
+			method: 'POST',
+			body: formData
+		});
+
+        isLoading.set(false);
+        notification.open('Tags actualizados yipiieeee');
+        editMode = false;
     }
 </script>
 
 <div class="flex" data-sveltekit-preload-data="false">
-	<div class="w-full m-4 p-4 bg-slate-700">
+	<div class="m-4 w-full bg-slate-700 p-4">
+		<div class="text-4xl text-white">{folderName}</div>
+		{#if editMode}
+			<div class=" justify-self-start mb-6">
+				<TagEditor bind:tags></TagEditor>
+			</div>
+		{:else}
+			{#each tags as tag}
+				<Badge class="mx-2 mt-6" href={tag.url} large color="dark" border>
+					{capitalizeFirstLetter(tag.name)}
+				</Badge>
+			{/each}
+		{/if}
+		<div class="flex">
+			{#if canEdit}
+				{#if editMode}
+					<Button onclick={updateTags} color="green">
+						Dale candela
+					</Button>
+					<Button class="mx-2" onclick={() => editMode = !editMode} color="red">
+						Me arrepenti we
+					</Button>
+				{:else}
+					<Button onclick={() => editMode = !editMode} 
+					class="mx-2 mt-4" color="dark">
+						<EditOutline class="mr-3"></EditOutline> Editar tags de carpeta
+					</Button>
+				{/if}
+			{/if}
+		</div>
 		<div class="flex flex-wrap justify-around">
 			{#if folders.length < 1}
-				<div class="text-white"> Chale, no hay carpetas :c</div>
+				<div class="text-white">Chale, no hay carpetas :c</div>
 			{/if}
 			{#each folders as folder}
-				<Card href={folder.url} class="my-6 mx-1 w-full md:w-1/3 lg:w-1/4">
+				<Card href={folder.url} class="mx-1 my-6 w-full md:w-1/3 lg:w-1/4">
 					<div class="flex">
 						<div class="flex-shrink">
 							<svg
@@ -117,80 +163,102 @@
 								/>
 							</svg>
 						</div>
-						<div class="flex-1 ml-4">
+						<div class="ml-4 flex-1">
 							{folder.name}
 						</div>
 					</div>
 				</Card>
 			{/each}
 		</div>
-		<hr class="my-5 folder">
-        <div class="flex flex-wrap justify-around">
-            {#if entries.length < 1}
-				<div class="text-white"> Chale, no hay articulos :c</div>
+		<hr class="folder my-5" />
+		<div class="flex flex-wrap justify-around">
+			{#if entries.length < 1}
+				<div class="text-white">Chale, no hay articulos :c</div>
 			{/if}
 			{#each entries as entry}
-                <Card href={entry.url} img={entry.preview} class="
-					flex flex-col items-center justify-center m-3
-					w-[15rem]
-				">
+				<Card
+					href={entry.url}
+					img={entry.preview}
+					class="
+					m-3 flex w-[15rem] flex-col items-center
+					justify-center
+				"
+				>
 					<div class="mt-2 text-2xl">{entry.name}</div>
 				</Card>
-            {/each}
-        </div>
-		<hr class="my-5 folder">
-        <div class="flex flex-wrap justify-around">
-            {#if images.length < 1}
-				<div class="text-white"> Chale, no hay imagenes :c</div>
+			{/each}
+		</div>
+		<hr class="folder my-5" />
+		<div class="flex flex-wrap justify-around">
+			{#if images.length < 1}
+				<div class="text-white">Chale, no hay imagenes :c</div>
 			{/if}
 			{#each images as image}
-                <Card href={image.url} img={image.preview} horizontal class="
-					items-center m-3
-				">
+				<Card
+					href={image.url}
+					img={image.preview}
+					horizontal
+					class="
+					m-3 items-center
+				"
+				>
 					<div class="mt-2 text-2xl">{image.name}</div>
 				</Card>
-            {/each}
-        </div>
+			{/each}
+		</div>
 	</div>
 </div>
 
-<Modal classBody="flex justify-center"
-title="Nuevo folder" bind:open={newFolderModal} outsideclose>
-	<form method="POST" action="?/newFolder" onsubmit={handleFolderSubmit}
-	class="flex flex-col self-center justify-center w-[90%]">
-		<FloatingLabelInput class="mb-4 self-center"
-		id="newFolderName" name="newFolderName" type="text">
+<Modal
+	classBody="flex justify-center"
+	title="Nueva carpeta"
+	bind:open={newFolderModal}
+	outsideclose
+>
+	<form
+		method="POST"
+		action="?/newFolder"
+		onsubmit={handleFolderSubmit}
+		class="flex w-[90%] flex-col justify-center self-center"
+	>
+		<FloatingLabelInput
+			class="mb-4 self-center"
+			id="newFolderName"
+			name="newFolderName"
+			type="text"
+		>
 			Nombre
 		</FloatingLabelInput>
 		<div class="mt-6">
-			<TagEditor bind:tags={tags}></TagEditor>
-			<input type="hidden" name="tags" value={JSON.stringify(tags)}>
+			<TagEditor bind:tags></TagEditor>
+			<input type="hidden" name="tags" value={JSON.stringify(tags)} />
 		</div>
-		<Button disabled={$isLoading} type="submit"
-		class="my-5 w-[70%] self-center" 
-		color="green">Crear folder</Button>
+		<Button disabled={$isLoading} type="submit" class="my-5 w-[70%] self-center" color="green"
+			>Crear carpeta</Button
+		>
 	</form>
 </Modal>
 
-<Modal classBody="flex justify-center"
-title="Nueva imagen" bind:open={newImageModal} outsideclose>
-	<form method="POST" action="?/newImage" onsubmit={handleImageSubmit}
-	class="flex flex-col self-center justify-center w-[90%]">
-		<FloatingLabelInput class="mb-4 self-center"
-		id="newImageName" name="newImageName" type="text">
+<Modal classBody="flex justify-center" title="Nueva imagen" bind:open={newImageModal} outsideclose>
+	<form
+		method="POST"
+		action="?/newImage"
+		onsubmit={handleImageSubmit}
+		class="flex w-[90%] flex-col justify-center self-center"
+	>
+		<FloatingLabelInput class="mb-4 self-center" id="newImageName" name="newImageName" type="text">
 			Nombre
 		</FloatingLabelInput>
 		<div class="my-4">
-			<ImageFileDrop bind:value={imgFile} bind:imgUrl={imgUrl}
-			></ImageFileDrop>
+			<ImageFileDrop bind:value={imgFile} bind:imgUrl></ImageFileDrop>
 		</div>
 		<div class="mt-6">
-			<TagEditor bind:tags={tags}></TagEditor>
-			<input type="hidden" name="tags" value={JSON.stringify(tags)}>
+			<TagEditor bind:tags></TagEditor>
+			<input type="hidden" name="tags" value={JSON.stringify(tags)} />
 		</div>
-		<Button disabled={$isLoading} type="submit"
-		class="my-5 w-[70%] self-center" 
-		color="green">Crear imagen</Button>
+		<Button disabled={$isLoading} type="submit" class="my-5 w-[70%] self-center" color="green"
+			>Crear imagen</Button
+		>
 	</form>
 </Modal>
 

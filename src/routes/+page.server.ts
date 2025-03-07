@@ -1,7 +1,7 @@
-import { fail, redirect, type Actions } from '@sveltejs/kit';
+import { redirect, type Actions } from '@sveltejs/kit';
 import { isLoading } from '$lib/stores/loading';
 import type { PageServerLoad } from './$types';
-import { createWorld, getWorlds } from '$lib/database/world';
+import { createWorld } from '$lib/database/world';
 
 export const load: PageServerLoad = async (
     { params, url, platform, cookies, parent }
