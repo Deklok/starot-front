@@ -14,14 +14,17 @@
 
 	let { isLoggedIn, canEdit } = page.data;
 
-	let folderName = $derived(page.data.name);
-	let folders = $derived(page.data.folders);
-	let images = $derived(page.data.images);
-	let entries = $derived(page.data.entries);
+	let props = $props();
+	
+	let folderName = $derived(props.name || page.data.name);
+	let folders = $derived(props.folders || page.data.folders || []);
+	let images = $derived(props.images ||page.data.images || []);
+	let entries = $derived(props.entries ||page.data.entries || []);
 
 	let newFolderModal = $state(false);
 	let newImageModal = $state(false);
 	let tags = $state(page.data.tags);
+	let modalTags = $state([]);
 	let imgFile: File | null = $state(null);
 	let imgUrl: string | null = $state(null);
 	let editMode = $state(false);
@@ -142,9 +145,6 @@
 			{/if}
 		</div>
 		<div class="flex flex-wrap justify-around">
-			{#if folders.length < 1}
-				<div class="text-white">Chale, no hay carpetas :c</div>
-			{/if}
 			{#each folders as folder}
 				<Card href={folder.url} class="mx-1 my-6 w-full md:w-1/3 lg:w-1/4">
 					<div class="flex">
@@ -173,9 +173,6 @@
 		</div>
 		<hr class="folder my-5" />
 		<div class="flex flex-wrap justify-around">
-			{#if entries.length < 1}
-				<div class="text-white">Chale, no hay articulos :c</div>
-			{/if}
 			{#each entries as entry}
 				<Card
 					href={entry.url}
@@ -191,9 +188,6 @@
 		</div>
 		<hr class="folder my-5" />
 		<div class="flex flex-wrap justify-around">
-			{#if images.length < 1}
-				<div class="text-white">Chale, no hay imagenes :c</div>
-			{/if}
 			{#each images as image}
 				<Card
 					href={image.url}
@@ -207,6 +201,9 @@
 				</Card>
 			{/each}
 		</div>
+		{#if folders.length === 0 && entries.length === 0 && images.length === 0}
+			<div class="text-white text-2xl mt-4 text-center">No hay nada aqui</div>
+		{/if}
 	</div>
 </div>
 
@@ -231,8 +228,8 @@
 			Nombre
 		</FloatingLabelInput>
 		<div class="mt-6">
-			<TagEditor bind:tags></TagEditor>
-			<input type="hidden" name="tags" value={JSON.stringify(tags)} />
+			<TagEditor bind:tags={modalTags}></TagEditor>
+			<input type="hidden" name="tags" value={JSON.stringify(modalTags)} />
 		</div>
 		<Button disabled={$isLoading} type="submit" class="my-5 w-[70%] self-center" color="green"
 			>Crear carpeta</Button
@@ -254,8 +251,8 @@
 			<ImageFileDrop bind:value={imgFile} bind:imgUrl></ImageFileDrop>
 		</div>
 		<div class="mt-6">
-			<TagEditor bind:tags></TagEditor>
-			<input type="hidden" name="tags" value={JSON.stringify(tags)} />
+			<TagEditor bind:tags={modalTags}></TagEditor>
+			<input type="hidden" name="tags" value={JSON.stringify(modalTags)} />
 		</div>
 		<Button disabled={$isLoading} type="submit" class="my-5 w-[70%] self-center" color="green"
 			>Crear imagen</Button

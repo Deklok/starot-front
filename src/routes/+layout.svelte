@@ -10,12 +10,15 @@
 	import Notification from '$lib/components/Notification.svelte';
 	import Loading from '$lib/components/Loading.svelte';
 	import MobileDrawer from '$lib/components/MobileDrawer.svelte';
+	import { goto } from '$app/navigation';
 
 	const username = $derived(page.data.username);
 	const isLoggedIn = $derived(page.data.isLoggedIn);
 	const worlds = $derived(page.data.worlds);
 	const userWorlds = $derived(page.data.userWorlds);
 
+	let query: string = $state(``);
+	
 	// Toggle sidebar function
 	function toggleSidebar() {
 		$sidebarOpen = !$sidebarOpen;
@@ -38,6 +41,10 @@
 			window.removeEventListener('resize', handleResize);
 		};
 	});
+
+	function search() {
+		goto(`/search?query=${query}`);
+	}
 </script>
 
 <div class="flex h-screen overflow-hidden" data-sveltekit-preload-data="false">
@@ -63,8 +70,10 @@
 			</div>
 
 			<div class="flex self-center w-1/2">
-				<Search size="md" class="rounded-lg py-2.5" placeholder="Buscar... (no funciona aun no se emocionen)" />
-				<Button class="p-2.5! rounded-lg" color="dark">
+				<Search size="md" class="rounded-lg py-2.5" bind:value={query}
+				placeholder="Buscar..." />
+				<Button onclick={search}
+				class="p-2.5! rounded-lg" color="dark">
 					<SearchOutline class="w-6 h-6" />
 				</Button>
 			</div>

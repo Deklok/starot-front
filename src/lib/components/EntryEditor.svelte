@@ -113,7 +113,6 @@
 
 	async function saveChanges() {
 		isLoading.set(true);
-		console.log('entered save entry');
 		const formData = new FormData();
 
 		if (!imgFile && !imgUrl) {

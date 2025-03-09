@@ -17,7 +17,6 @@
 		return async({ result }) => {
 			isLoading.set(false);
 			if (result.type === 'success') {
-				console.log('entered the redirect');
 				goto('/', {
 					invalidateAll: true
 				});

@@ -52,7 +52,6 @@ export async function createEntry(
     ).run();
 
     if (!result.success) {
-        console.log(result.error);
         throw new Error(`error on create entry`);
     }
 }

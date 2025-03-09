@@ -10,7 +10,7 @@ import { currentWorld } from "$lib/stores/world";
 import { get } from "svelte/store";
 import { isLoading } from "$lib/stores/loading";
 
-export const load: PageServerLoad = async ({ params, url, platform, cookies }) => {
+export const load: PageServerLoad = async ({ params, platform }) => {
     isLoading.set(true);
     // @ts-ignore
     const worldUniqueName: string = params.world; 
@@ -31,7 +31,6 @@ export const load: PageServerLoad = async ({ params, url, platform, cookies }) =
     const entries: PreviewData[] = [];
     const images: PreviewData[] = [];
 
-    //console.log('worldItems', worldItems);
     worldItems.forEach(item => {
         switch(item.type) {
             case 'folder':

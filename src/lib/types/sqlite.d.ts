@@ -34,6 +34,11 @@ interface ItemWithPreview extends Item {
     entryPreview: string | null
 }
 
+interface ItemSearchResult extends ItemWithPreview {
+    worldName: string;
+    worldUniqueName: string;
+}
+
 interface Image {
     id: number;
     itemId: number;
