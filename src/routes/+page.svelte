@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { applyAction, enhance } from "$app/forms";
-	import { goto, invalidateAll } from "$app/navigation";
+	import { goto } from "$app/navigation";
 	import { page } from "$app/state";
 	import { isLoading } from '$lib/stores/loading';
 	import { Button, Card, FloatingLabelInput, Modal } from "flowbite-svelte";
@@ -10,6 +10,9 @@
 	let newWorldModal = $state(false);
 </script>
 
+<svelte:head>
+  <title> Starot </title>
+</svelte:head>
 {#if userWorlds.length > 0}
 <div class="mb-3 text-white flex justify-center text-4xl"> Mis mundos </div>
 <div class="flex w-full flex-wrap items-center justify-center">
@@ -17,8 +20,9 @@
 		<Card href={world.uniqueName}
 		class="w-full md:w-1/2 lg:w-1/3 mx-2 my-2 text-white flex-wrap
 		flex text-center items-center gap-2">
-			<GlobeSolid></GlobeSolid>
-			{world.name}
+			<GlobeSolid size="xl"></GlobeSolid>
+			<div class=" text-3xl">{world.name}</div>
+			<div class="italic">{world.createdBy}</div>
 		</Card>
 	{/each}
 </div>
@@ -29,8 +33,9 @@
 		<Card href={world.uniqueName}
 		class="w-full md:w-1/2 lg:w-1/3 mx-2 my-2 text-white flex-wrap
 		flex text-center items-center gap-2">
-			<GlobeSolid></GlobeSolid>
-			{world.name}
+			<GlobeSolid size="xl"></GlobeSolid>
+			<div class="text-3xl">{world.name}</div>
+			<div class="italic">{world.createdBy}</div>
 		</Card>
 	{/each}
 </div>

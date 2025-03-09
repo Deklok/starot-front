@@ -5,6 +5,9 @@
     const loadedData: any = $derived(page.data);
 </script>
 
+<svelte:head>
+  <title> Editor - {loadedData.name} </title>
+</svelte:head>
 <div>
     <EntryEditor {...loadedData}></EntryEditor>
 </div>

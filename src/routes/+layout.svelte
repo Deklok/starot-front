@@ -2,10 +2,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import '../app.css';
-	import { Button, Navbar, NavBrand } from 'flowbite-svelte';
+	import { Button, Navbar, NavBrand, Search } from 'flowbite-svelte';
 	import { sidebarOpen } from '$lib/stores/sidebarStore';
 	import UserSideBar from '$lib/components/UserSideBar.svelte';
-	import { ArrowLeftOutline, BarsOutline, CloseOutline, PaperClipOutline } from 'flowbite-svelte-icons';
+	import { ArrowLeftOutline, BarsOutline, CloseOutline, PaperClipOutline, SearchOutline } from 'flowbite-svelte-icons';
 	import { page } from '$app/state';
 	import Notification from '$lib/components/Notification.svelte';
 	import Loading from '$lib/components/Loading.svelte';
@@ -58,9 +58,16 @@
 					<span class="self-center whitespace-nowrap text-xl font-semibold text-white">Starot Wiki</span>
 				</NavBrand>
 			</div>
+
+			<div class="flex self-center w-1/2">
+				<Search size="md" class="rounded-lg py-2.5" placeholder="Buscar... (no funciona aun no se emocionen)" />
+				<Button class="p-2.5! rounded-lg" color="dark">
+					<SearchOutline class="w-6 h-6" />
+				</Button>
+			</div>
 			
 			<div class="flex md:order-2">
-				<Button outline pill
+				<Button outline pill color="dark"
 				onclick={() => navigator.clipboard.writeText(window.location.href)}>
 					<PaperClipOutline class="w-6 h-6 rotate-45" />
 				</Button>

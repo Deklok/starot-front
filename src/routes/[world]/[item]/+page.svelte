@@ -8,6 +8,9 @@
     let type = $derived(page.data.type);
 </script>
 
+<svelte:head>
+  <title> {loadedData.name} </title>
+</svelte:head>
 <div>
     {#if type === 'folder'}
         <FolderView {...loadedData}></FolderView>

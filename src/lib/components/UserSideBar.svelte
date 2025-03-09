@@ -49,10 +49,15 @@
 			<SidebarGroup border>
 				<div class="py-3 px-2 text-gray-300">Mis mundos</div>
 				{#each userWorlds as world}
-				<SidebarItem label={world.name} href={`/${world.uniqueName}`}
+				<SidebarItem href={`/${world.uniqueName}`}
 				activeClass="bg-gray-700" class="text-white hover:bg-gray-700">
 					<svelte:fragment slot="icon">
 						<GlobeSolid class="text-gray-300" />
+					</svelte:fragment>
+					<svelte:fragment slot="subtext">
+						<div class="flex flex-col w-fit">
+							<div class="text-lg block" > {world.name} </div>
+						</div>	
 					</svelte:fragment>
 				</SidebarItem>	
 				{/each}
@@ -60,10 +65,16 @@
 			<SidebarGroup border>							
 				<div class="py-3 px-2 text-gray-300">Otros mundos</div>
 				{#each worlds as world}
-				<SidebarItem label={world.name} href={`/${world.uniqueName}`}
+				<SidebarItem href={`/${world.uniqueName}`}
 				activeClass="bg-gray-700" class="text-white hover:bg-gray-700">
 					<svelte:fragment slot="icon">
 						<GlobeSolid class="text-gray-300" />
+					</svelte:fragment>
+					<svelte:fragment slot="subtext">
+						<div class="flex flex-col w-fit">
+							<div class="text-lg block" > {world.name} </div>
+							<div class="text-[0.7rem] italic block"> {world.createdBy}</div>
+						</div>
 					</svelte:fragment>
 				</SidebarItem>					
 				{/each}

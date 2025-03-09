@@ -5,6 +5,9 @@
 	import { Button, FloatingLabelInput } from "flowbite-svelte";
 </script>
 
+<svelte:head>
+  <title> Iniciar sesion </title>
+</svelte:head>
 <div class="w-full md:w-[50%] justify-self-center">
 	<!-- Login Form -->
 	<form class="flex flex-col justify-center"

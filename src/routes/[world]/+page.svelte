@@ -6,4 +6,7 @@
 	const isWorldRoot = true;
 </script>
 
+<svelte:head>
+  <title> {loadedData.name} </title>
+</svelte:head>
 <FolderView {...loadedData, isWorldRoot}></FolderView>
