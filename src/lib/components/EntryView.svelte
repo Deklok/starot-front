@@ -3,6 +3,7 @@
 	import { capitalizeFirstLetter } from '$lib/utils/stringFormat';
 	import { A, Badge, Button, Card, Carousel, Modal, Table, TableBody, TableBodyCell, TableBodyRow, Thumbnails } from 'flowbite-svelte';
 	import { EditOutline } from 'flowbite-svelte-icons';
+	import MarkDown from './MarkDown.svelte';
 
     let { name, tags, images, sections, profileSections, entryImage, canEdit } = $props();
     
@@ -24,6 +25,28 @@
             showModal = true;
         }
     }
+
+    // Function to detect if a string likely contains markdown
+    function isMarkdown(text: string): boolean {
+        if (!text || typeof text !== 'string') return false;
+        
+        // Check for common markdown patterns
+        const markdownPatterns = [
+            /[*_]{1,2}[^*_]+[*_]{1,2}/, // Bold or italic
+            /^#+\s/, // Headers
+            /\[.+?\]\(.+?\)/, // Links
+            /^-\s/, // List items
+            /^>\s/, // Blockquotes
+            /`[^`]+`/, // Inline code
+            /```[\s\S]*?```/, // Code blocks
+            /!\[.+?\]\(.+?\)/, // Images
+            /\|[\s\S]+\|/, // Tables
+            /^---$/ // Horizontal rule
+        ];
+        
+        return markdownPatterns.some(pattern => pattern.test(text));
+    }
+
     const itemRoute = page.url.href.split('/');
     const editLink = `/${itemRoute[3]}/editor/${itemRoute[4]}`;
 </script>
@@ -54,16 +77,21 @@ title={selectedImage.title} bind:open={showModal} autoclose outsideclose>
                     {capitalizeFirstLetter(tag.name)} 
                 </Badge>
             {/each}
-            <Card img={profileImage} class="float-right m-6">
+            <Card img={profileImage} 
+            class="float-right m-6 max-w-full md:max-w-[500px]">
                 <Table striped={true}>
 					<TableBody tableBodyClass="divide-y">
 						{#each profileSections as row, i}
 							<TableBodyRow>
-								<TableBodyCell>
+								<TableBodyCell class="font-bold">
 									{row.label}
 								</TableBodyCell>
-								<TableBodyCell>
-									{row.value}
+								<TableBodyCell class="font-normal">
+									{#if isMarkdown(row.value)}
+                                        <MarkDown content={row.value} />
+                                    {:else}
+                                        {row.value}
+                                    {/if}
 								</TableBodyCell>
 							</TableBodyRow>
 						{/each}

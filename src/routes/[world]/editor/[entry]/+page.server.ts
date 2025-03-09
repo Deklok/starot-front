@@ -5,12 +5,10 @@ import { getWorldByUniqueName } from "$lib/database/world";
 import { getItem } from "$lib/database/item";
 import { getEntry, updateEntry } from "$lib/database/entry";
 import { getItemTags, updateItemTags } from "$lib/database/tags";
-import { redirect, type Actions } from "@sveltejs/kit";
+import { error, type Actions } from "@sveltejs/kit";
 import { uploadFile } from "$lib/images/r2";
 import { generateRandomId } from "$lib/utils/randomId";
-
-var entryId: number | null = null;
-var itemId: number | null = null;
+import { entryId, itemId } from "$lib/stores/item";
 
 export const load: PageServerLoad = async ({ params, url, platform, locals }) => {
     const worldUniqueName = params.world;
@@ -48,8 +46,9 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
         DB,
         item.id
     );
-    entryId = entry.id;
-    itemId = item.id;
+
+    entryId.set(entry.id);
+    itemId.set(item.id);
 
     const entryData: EntryViewData = {
         name: entry.name,
@@ -72,8 +71,17 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
 export const actions: Actions = {
     newEntry: async ({ request, platform, locals, params }) => {
         const world = get(currentWorld);
+        const currentEntryId = get(entryId);
+        const currentItemId = get(itemId);
 
-        if (world === null || !locals.userId || !entryId || !itemId) {
+
+        if (world === null || !locals.userId || !currentEntryId || !currentItemId) {
+            console.log({
+                world,
+                userId: locals.userId,
+                entryId: currentEntryId,
+                itemId: currentItemId
+            });
             throw new Error('necessary variables not set on action');
         }
 
@@ -109,7 +117,7 @@ export const actions: Actions = {
         const entryUniqueName: string = params.entry as string;
         let mainEntryImage: string = '';
 
-        await updateItemTags(DB, itemId, tags.map((tag: any) => tag.name ));
+        await updateItemTags(DB, currentItemId, tags.map((tag: any) => tag.name ));
 
         if (imgFile instanceof File) {
             // Upload images from the entry
@@ -136,7 +144,7 @@ export const actions: Actions = {
             }
         }));
 
-        await updateEntry(DB, entryId, {
+        await updateEntry(DB, currentEntryId, {
             name,
             image: mainEntryImage,
             attributes: profileSections.map((a: any) => ({
@@ -150,6 +158,9 @@ export const actions: Actions = {
                 title: s.title,
                 content: s.content
             }))
-        });        
+        });  
+        
+        return { sucess: true }
+
     }
 }

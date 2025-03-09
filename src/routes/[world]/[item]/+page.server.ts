@@ -11,8 +11,7 @@ import { getWorldByUniqueName } from "$lib/database/world";
 import { formatStringForURL } from "$lib/utils/formatUrl";
 import { uploadFile } from "$lib/images/r2";
 import { isLoading } from "$lib/stores/loading";
-
-var currentItem: Item | null = null;
+import { currentItem } from "$lib/stores/item";
 
 export const load: PageServerLoad = async ({ params, url, platform, locals }) => {
     isLoading.set(true);
@@ -48,7 +47,7 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
                 'folder',
                 parentId
             );
-            currentItem = currentFolder;
+            currentItem.set(currentFolder);
             const folderTags = await getItemTags(DB, currentFolder.id);
             const folderItems = await getFolderItems(
                 DB, 
@@ -105,17 +104,19 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
             break;
 
         case 'image':
-            currentItem = await getItem(
+            
+            const currentImage = await getItem(
                 DB, 
                 worldUniqueName,
                 itemUniqueName,
                 'image',
                 parentId
             );
-            const imageUrl = await getImageForItem(DB, currentItem.id);
-            const imageTags = await getItemTags(DB, currentItem.id);
+            currentItem.set(currentImage);
+            const imageUrl = await getImageForItem(DB, currentImage.id);
+            const imageTags = await getItemTags(DB, currentImage.id);
             const imageData: ImageResponseData = {
-                name: currentItem.name,
+                name: currentImage.name,
                 imageUrl,
                 tags: imageTags.map((tag) => ({
                     name: tag,
@@ -126,17 +127,18 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
             break;
 
         case 'entry':
-            currentItem = await getItem(
+            const currentEntry = await getItem(
                 DB, 
                 worldUniqueName,
                 itemUniqueName,
                 'entry',
                 parentId
             );
-            const entryTags = await getItemTags(DB, currentItem.id);
+            currentItem.set(currentEntry);
+            const entryTags = await getItemTags(DB, currentEntry.id);
             const entry = await getEntry(
                 DB,
-                currentItem.id
+                currentEntry.id
             );
             const entryData: EntryViewData = {
                 name: entry.name,
@@ -171,14 +173,15 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
         {...finalResponse, type: typeItem}
     );
     isLoading.set(false);
-    return {...finalResponse, type: typeItem, currentId: currentItem?.id, canEdit };
+    return {...finalResponse, type: typeItem, canEdit };
 }
 
 export const actions: Actions = {
     newFolder: async ({ request, platform, locals }) => {
         const world = get(currentWorld);
+        const currentItemLocal = get(currentItem);
 
-        if (!world || !locals.userId || !currentItem) {
+        if (!world || !locals.userId || !currentItemLocal) {
             throw new Error('necessary variables not set on action');
         }
 
@@ -203,7 +206,7 @@ export const actions: Actions = {
             uniqueName: folderUniqueName,
             type: 'folder',
             worldId: world.id,
-            parentId: currentItem.id
+            parentId: currentItemLocal.id
         });
         await associateTagsToItem(DB, itemId, tags.map((tag: any) => tag.name ));
         
@@ -211,8 +214,9 @@ export const actions: Actions = {
     },
     newImage: async ({ request, platform, locals }) => {
         const world = get(currentWorld);
+        const currentItemLocal = get(currentItem);
 
-        if (world === null || !locals.userId || !currentItem) {
+        if (world === null || !locals.userId || !currentItemLocal) {
             throw new Error('necessary variables not set on action');
         }
 
@@ -233,7 +237,7 @@ export const actions: Actions = {
         const tags = JSON.parse(data.get('tags') as string || '[]');
         const imgFile = data.get('image') as File;
         const r2Key = 
-        `${world.uniqueName}/${currentItem.id}_${imageUniqueName}`;
+        `${world.uniqueName}/${currentItemLocal.id}_${imageUniqueName}`;
         
         const finalImagePath = await uploadFile(R2BUCKET, r2Key, imgFile);
 
@@ -242,7 +246,7 @@ export const actions: Actions = {
             uniqueName: imageUniqueName,
             type: 'image',
             worldId: world.id,
-            parentId: currentItem.id
+            parentId: currentItemLocal.id
         });
 
         await associateTagsToItem(DB, itemId, tags.map((tag: any) => tag.name ));
@@ -253,8 +257,9 @@ export const actions: Actions = {
     },
     updateTags: async ({ request, platform, locals }) => {
         const world = get(currentWorld);
+        const currentItemLocal = get(currentItem);
 
-        if (world === null || !locals.userId || !currentItem) {
+        if (world === null || !locals.userId || !currentItemLocal) {
             throw new Error('necessary variables not set on action');
         }
 
@@ -271,7 +276,7 @@ export const actions: Actions = {
         const data = await request.formData();
         const tags = JSON.parse(data.get('tags') as string || '[]');
 
-        await updateItemTags(DB, currentItem.id, tags.map((tag: any) => tag.name ));
+        await updateItemTags(DB, currentItemLocal.id, tags.map((tag: any) => tag.name ));
 
         return { success: true }
     }

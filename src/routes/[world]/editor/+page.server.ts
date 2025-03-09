@@ -9,8 +9,7 @@ import { uploadFile } from "$lib/images/r2";
 import { createEntry } from "$lib/database/entry";
 import { associateTagsToItem } from "$lib/database/tags";
 import { generateRandomId } from "$lib/utils/randomId";
-
-var parentId: number | null = null;
+import { parentId } from "$lib/stores/item";
 
 export const load: PageServerLoad = async ({ params, url, platform, locals }) => {
     const worldUniqueName = params.world;
@@ -32,8 +31,10 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
     }
 
     let queryParentId = url.searchParams.get('parentId');
-    parentId = (queryParentId === null) ? null : Number(queryParentId);
-
+    
+    parentId.set(
+        (queryParentId) ? Number(queryParentId) : null
+    );
 
     const entryData: EntryViewData = {
         name: '',
@@ -67,6 +68,7 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
 export const actions: Actions = {
     newEntry: async ({ request, platform, locals, url }) => {
         const world = get(currentWorld);
+        const currentParentId = get(parentId);
 
         if (world === null || !locals.userId) {
             throw new Error('necessary variables not set on action');
@@ -105,7 +107,7 @@ export const actions: Actions = {
             uniqueName: entryUniqueName,
             type: 'entry',
             worldId: world.id,
-            parentId: (parentId) ? parentId : undefined
+            parentId: currentParentId ? currentParentId : undefined
         });
 
         await associateTagsToItem(DB, itemId, tags.map((tag: any) => tag.name ));
@@ -144,6 +146,6 @@ export const actions: Actions = {
             }))
         });
         
-        return redirect(303, `${world.uniqueName}/${entryUniqueName}`);
+        return { sucess: true }
     }
 }

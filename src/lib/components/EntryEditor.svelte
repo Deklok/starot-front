@@ -11,11 +11,12 @@
 		type DraggableGalleryItem
 	} from '$lib/components/DraggableGallery.svelte';
 	import TagEditor from './TagEditor.svelte';
-	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { formatStringForURL } from '$lib/utils/formatUrl';
 	import { isLoading } from '$lib/stores/loading';
 	import { dndzone } from 'svelte-dnd-action';
+	import { notification } from '$lib/stores/notification';
+	import { page } from '$app/state';
 
 	let { entryData = $bindable(), uniqueName } = $props<{
 		entryData: EntryViewData;
@@ -144,6 +145,21 @@
 		});
 
 		isLoading.set(false);
+		notification.open(`Cambios guardados yipiiieeee`);
+
+		let worldUniqueName = page.params.world;
+		let entryUniqueName = (page.params.entry)
+			? page.params.entry
+			: formatStringForURL(entryName);
+		
+			let parentQuery = page.url.searchParams.get('parentId');
+		const parentId = (parentQuery) ? Number(parentQuery) : undefined;
+
+		const finalUrl = (parentId)
+		? `/${worldUniqueName}/${entryUniqueName}?parentId=${parentId}`
+		: `/${worldUniqueName}/${entryUniqueName}`
+		
+		goto(finalUrl);
 	}
 
 	const beginDeleteCharacter = () => {
@@ -189,11 +205,15 @@
 						<div class="py-6 px-3 w-full rounded-2xl {row.id % 2 === 0 ? 'bg-gray-800' : 'bg-gray-700'}">
 							<div class="flex w-full justify-evenly">
 								<BarsOutline size="lg" color="white" class="place-self-center mr-3"></BarsOutline>
-								<div class="w-1/2 mx-2">
+								<div class="w-full mx-2">
 									<FloatingLabelInput	bind:value={row.label} required></FloatingLabelInput>
-								</div>
-								<div class="w-1/2 mx-2">
-									<FloatingLabelInput	bind:value={row.value} required></FloatingLabelInput>
+									<textarea
+										bind:value={row.value}
+										rows="2"
+										
+										class="w-full mt-1 p-2 rounded-md bg-gray-900 text-white"
+										required
+									></textarea>
 								</div>
 								<Button
 									pill
@@ -201,7 +221,7 @@
 									color="red"
 									onclick={() => removeProfileSection(row.id)}
 									size="xs"
-									class="!p2 w-fit"
+									class="!p2 w-fit h-fit place-self-center"
 								>
 									<CircleMinusSolid class="text-slate-50" />
 								</Button>

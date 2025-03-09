@@ -9,15 +9,15 @@
 	import { notification } from '$lib/stores/notification';
 	import { capitalizeFirstLetter } from '$lib/utils/stringFormat';
 	import { EditOutline } from 'flowbite-svelte-icons';
+	import { currentItem } from '$lib/stores/item';
+	import { get } from 'svelte/store';
 
 	let { isLoggedIn, canEdit } = page.data;
 
-	let parentId = $derived(page.data.parentId);
 	let folderName = $derived(page.data.name);
 	let folders = $derived(page.data.folders);
 	let images = $derived(page.data.images);
 	let entries = $derived(page.data.entries);
-	let currentId = $derived(page.data.currentId);
 
 	let newFolderModal = $state(false);
 	let newImageModal = $state(false);
@@ -38,8 +38,9 @@
 				// Handle entry creation
 				const worldUniqueName = page.params.world;
 				let redirectUrl = `/${worldUniqueName}/editor`;
-				if (currentId) {
-					redirectUrl = `${redirectUrl}?parentId=${currentId}`;
+				const currentFolder = get(currentItem);
+				if (currentFolder) {
+					redirectUrl = `${redirectUrl}?parentId=${currentFolder.id}`;
 				}
 				goto(redirectUrl);
 				break;
