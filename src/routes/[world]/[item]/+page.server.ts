@@ -3,7 +3,7 @@ import { getFolderItems } from "$lib/database/folder";
 import { getImageForItem, createImage } from "$lib/database/image";
 import { getItem, createItem } from "$lib/database/item";
 import { getItemTags, associateTagsToItem, updateItemTags } from "$lib/database/tags";
-import type { Actions } from "@sveltejs/kit";
+import { redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { get } from "svelte/store";
 import { currentWorld } from "$lib/stores/world";
@@ -173,6 +173,16 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
         {...finalResponse, type: typeItem}
     );
     isLoading.set(false);
+    
+    // Check if private or nsfw
+    if (
+        finalResponse && 
+        finalResponse.tags &&
+        finalResponse.tags.some((tag) => tag.name === 'privado' || tag.name === 'nsfw') &&
+        !locals.userId
+    ) {
+        redirect(302, '/private');
+    }
     return {...finalResponse, type: typeItem, canEdit };
 }
 

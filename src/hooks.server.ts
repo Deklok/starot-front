@@ -8,6 +8,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 		const jsonresult = JSON.parse(await decrypt(session));
 		event.locals.userId = jsonresult.id;
 		event.locals.username = jsonresult.username;
+	} else {
+		event.locals.userId = undefined;
+		event.locals.username = undefined;
 	}
 	
 	const response = await resolve(event);

@@ -11,7 +11,10 @@
 	import Loading from '$lib/components/Loading.svelte';
 	import MobileDrawer from '$lib/components/MobileDrawer.svelte';
 
-	const { username, isLoggedIn, worlds, userWorlds } = page.data;
+	const username = $derived(page.data.username);
+	const isLoggedIn = $derived(page.data.isLoggedIn);
+	const worlds = $derived(page.data.worlds);
+	const userWorlds = $derived(page.data.userWorlds);
 
 	// Toggle sidebar function
 	function toggleSidebar() {

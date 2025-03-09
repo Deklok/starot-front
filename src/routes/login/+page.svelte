@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { applyAction, enhance } from "$app/forms";
-	import { goto, invalidateAll } from "$app/navigation";
+	import { goto } from "$app/navigation";
 	import { isLoading } from "$lib/stores/loading";
+	import { notification } from "$lib/stores/notification";
 	import { Button, FloatingLabelInput } from "flowbite-svelte";
 </script>
 
@@ -15,9 +16,13 @@
 		isLoading.set(true);
 		return async({ result }) => {
 			isLoading.set(false);
-			if (result.type === 'redirect') {
-				invalidateAll();
-				goto(result.location);
+			if (result.type === 'success') {
+				console.log('entered the redirect');
+				goto('/', {
+					invalidateAll: true
+				});
+			} else if (result.type === 'failure') {
+				notification.open('Te mamaste, intenta de nuevo', true);
 			} else {
 				await applyAction(result);
 			}

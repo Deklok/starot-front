@@ -1,7 +1,7 @@
 import { encryptString } from '$lib/database/auth';
 import { login } from '$lib/database/user';
 import { isLoading } from '$lib/stores/loading';
-import { fail, redirect, type Actions } from '@sveltejs/kit';
+import { error, fail, type Actions } from '@sveltejs/kit';
 
 export const actions = {
     login: async ({ cookies, request, platform, locals }) => {
@@ -32,11 +32,10 @@ export const actions = {
                 path: '/',
             });
         } catch (err: any) {
-
-            return fail(500);
+            return error(500, err);
         }
 
         isLoading.set(false);
-        return redirect(303, '/');
+        return { success: true}
     }
 } satisfies Actions;
