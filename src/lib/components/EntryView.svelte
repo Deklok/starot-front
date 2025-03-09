@@ -64,7 +64,7 @@ title={selectedImage.title} bind:open={showModal} autoclose outsideclose>
 
 <div class="flex w-full">
 	<main class="w-full flex flex-wrap justify-center">
-        <div class="prose lg:prose-xl text-white">
+        <div class="prose lg:prose-xl text-white container">
             <h1 class="text-4xl font-bold mb-4">{name}
                 {#if canEdit}
                     <Button class="mx-2" href={editLink} color="dark">
@@ -73,12 +73,12 @@ title={selectedImage.title} bind:open={showModal} autoclose outsideclose>
                 {/if}
             </h1>
             {#each tags as tag}
-                <Badge class="mx-2 mt-6" href={tag.url} large color="dark" border>
+                <Badge class="mx-2 mt-6 mb-6" href={tag.url} large color="dark" border>
                     {capitalizeFirstLetter(tag.name)} 
                 </Badge>
             {/each}
             <Card img={profileImage} 
-            class="float-right m-6 max-w-full md:max-w-[500px]">
+            class="flex md:float-right m-0 md:m-6 max-w-max md:max-w-[500px]">
                 <Table striped={true}>
 					<TableBody tableBodyClass="divide-y">
 						{#each profileSections as row, i}
