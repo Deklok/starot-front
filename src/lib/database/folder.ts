@@ -37,3 +37,55 @@ export async function getFolderItems(
 
     return items.map((item) => transformToCamelCase<ItemWithPreview>(item));
 }
+
+export async function moveItemToFolder(
+    db: D1Database,
+    itemId: number,
+    folderId: number
+): Promise<void> {
+    const parentId = folderId === 0 ? null : folderId;
+    await db.prepare(`
+        UPDATE item
+        SET parent_id = ?
+        WHERE id = ?
+    `).bind(parentId, itemId).run();
+}
+
+export async function getFolderStructure(
+    db: D1Database,
+    worldId: number
+): Promise<Folder[]> {
+    const results = await db.prepare(`
+        SELECT * FROM item
+        WHERE 
+        world_id = ? AND
+        type = 'folder'
+    `).bind(worldId).all();
+
+    const items = results.results.map(item => transformToCamelCase<Folder>(item));
+
+    // Create a map for quick lookup of folders by ID
+    const itemsMap = new Map<number, Folder>();
+    items.forEach(item => {
+        // Initialize children array for each folder
+        item.children = [];
+        itemsMap.set(item.id, item);
+    });
+    
+    // Build the hierarchy
+    const rootFolders: Folder[] = [];
+    items.forEach(item => {
+        if (!item.parentId) {
+            // This is a root folder
+            rootFolders.push(item);
+        } else {
+            // This is a child folder
+            const parent = itemsMap.get(item.parentId);
+            if (parent) {
+                parent.children.push(item);
+            }
+        }
+    });
+
+    return rootFolders;
+}

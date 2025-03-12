@@ -60,7 +60,8 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
             imageUrl: image.filePath,
             tags: []
         })),
-        sections: entry.sections
+        sections: entry.sections,
+        updatedAt: entry.updatedAt
     } as EntryViewData;
 
     return {

@@ -70,6 +70,7 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
 
                     case 'image':
                         images.push({
+                            id: item.id,
                             name: item.name,
                             url: `/${worldUniqueName}/${item.uniqueName}?parentId=${currentFolder.id}&type=image`,
                             preview: item.preview as string
@@ -78,6 +79,7 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
 
                     case 'entry':
                         entries.push({
+                            id: item.id,
                             name: item.name,
                             url: `/${worldUniqueName}/${item.uniqueName}?parentId=${currentFolder.id}`,
                             preview: item.entryPreview as string
@@ -159,7 +161,8 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
                 sections: entry.sections.map((sec) => ({
                     title: sec.title,
                     content: sec.content
-                }))
+                })),
+                updatedAt: entry.updatedAt
             }
             finalResponse = entryData;
             break;
@@ -168,10 +171,6 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
 
             break;
     }
-
-    console.log('returning from page.server ',
-        {...finalResponse, type: typeItem}
-    );
     isLoading.set(false);
     
     // Check if private or nsfw

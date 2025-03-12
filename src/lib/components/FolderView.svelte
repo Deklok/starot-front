@@ -8,14 +8,16 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { notification } from '$lib/stores/notification';
 	import { capitalizeFirstLetter } from '$lib/utils/stringFormat';
-	import { EditOutline } from 'flowbite-svelte-icons';
+	import { EditOutline, FolderArrowRightSolid } from 'flowbite-svelte-icons';
 	import { currentItem } from '$lib/stores/item';
 	import { get } from 'svelte/store';
+	import TreeFolderView from './TreeFolderView.svelte';
 
-	let { isLoggedIn, canEdit } = page.data;
+	let { isLoggedIn } = page.data;
 
 	let props = $props();
 	
+	let canEdit = $derived(props.canEdit || page.data.canEdit || false);
 	let folderName = $derived(props.name || page.data.name);
 	let folders = $derived(props.folders || page.data.folders || []);
 	let images = $derived(props.images ||page.data.images || []);
@@ -28,6 +30,71 @@
 	let imgFile: File | null = $state(null);
 	let imgUrl: string | null = $state(null);
 	let editMode = $state(false);
+	let isWorldRoot = $state(page.data.isWorldRoot || false);
+
+	// Update these state variables
+	let showMoveModal = $state(false);
+	let selectedFolder = $state<Folder | null>(null);
+	let selectedItemId = $state(0);
+	let folderStructure: Folder[] = $state([]);
+	let showContextMenu = $state(false);
+	let contextMenuX = $state(0);
+	let contextMenuY = $state(0);
+
+	// Add this function to handle context menu
+	function handleContextMenu(event: any, item: any) {
+		event.preventDefault();
+		selectedItemId = item.id;
+		contextMenuX = event.clientX;
+		contextMenuY = event.clientY;
+		showContextMenu = true;
+	}
+	
+	// Add function to handle move modal
+	async function openMoveModal() {
+		isLoading.set(true);
+		const worldUniqueName = page.params.world;
+		folderStructure = [{
+			id: 0,
+			children: [],
+			type: 'folder',
+			name: "Raiz",
+			parentId: null,
+			worldId: 0,
+			uniqueName: '',
+			createdAt: ''
+		}];
+		const result = await fetch(`/${worldUniqueName}/folders`);
+		const data = await result.json();
+		folderStructure.push(...data);
+		isLoading.set(false);
+		showMoveModal = true;
+		showContextMenu = false;
+	}
+
+	async function moveItem() {
+		isLoading.set(true);
+		const formData = new FormData();
+		formData.append('itemId', selectedItemId.toString());
+		formData.append('folderId', selectedFolder!.id.toString());
+
+		const worldUniqueName = page.params.world;
+		const result = await fetch(`/${worldUniqueName}/folders`, {
+			method: 'POST',
+			body: formData
+		});
+
+		if (!result.ok) {
+			notification.open('Ay, valio verga algo', true);
+			return;
+		}
+
+		notification.open('Se movio coso yipiieee', false);
+		invalidateAll();
+
+		isLoading.set(false);
+		showMoveModal = false;
+	}
 
 	function handleOptionSelect(optionId: string) {
 		const selectedOption = optionId;
@@ -128,7 +195,7 @@
 			{/each}
 		{/if}
 		<div class="flex">
-			{#if canEdit}
+			{#if canEdit && isWorldRoot === false}
 				{#if editMode}
 					<Button onclick={updateTags} color="green">
 						Dale candela
@@ -179,8 +246,8 @@
 					img={entry.preview}
 					class="
 					m-3 flex w-[15rem] flex-col items-center
-					justify-center
-				"
+					justify-center"
+					oncontextmenu={(e) => handleContextMenu(e, entry)}
 				>
 					<div class="mt-2 text-2xl">{entry.name}</div>
 				</Card>
@@ -194,8 +261,8 @@
 					img={image.preview}
 					horizontal
 					class="
-					m-3 items-center
-				"
+					m-3 items-center"
+					oncontextmenu={(e) => handleContextMenu(e, image)}
 				>
 					<div class="mt-2 text-2xl">{image.name}</div>
 				</Card>
@@ -260,7 +327,56 @@
 	</form>
 </Modal>
 
-{#if isLoggedIn}
+<!-- Add context menu -->
+{#if showContextMenu}
+  <div 
+    class="absolute z-50 bg-gray-800 border border-gray-700 rounded-lg shadow-lg"
+    style="left: {contextMenuX}px; top: {contextMenuY}px"
+  >
+    <ul>
+      <li class="hover:bg-slate-700">
+		<div class="flex text-white">
+			<FolderArrowRightSolid size="lg" class="m-4"
+			></FolderArrowRightSolid>
+			<button 
+			class="w-full text-left px-4 py-2 text-xl"
+			onclick={openMoveModal}
+			>
+			Mover a otra carpeta
+			</button>
+		</div>
+      </li>
+    </ul>
+  </div>
+{/if}
+
+<!-- Click outside to close context menu -->
+{#if showContextMenu}
+  <div 
+    class="fixed inset-0 z-40" 
+    onclick={() => showContextMenu = false}
+  ></div>
+{/if}
+
+<Modal
+  title="Mover a otra carpeta"
+  bind:open={showMoveModal}
+  outsideclose
+>
+  <div class="p-4">
+    <TreeFolderView
+	folders={folderStructure}
+	bind:selectedFolder={selectedFolder}
+	></TreeFolderView>
+    
+    <div class="flex justify-end space-x-2 mt-4">
+      <Button color="red" onclick={() => showMoveModal = false}>Cancelar</Button>
+      <Button color="green" onclick={moveItem} disabled={!selectedFolder}>Mover</Button>
+    </div>
+  </div>
+</Modal>
+
+{#if isLoggedIn && canEdit}
 	<FloatingActionButton onSelect={handleOptionSelect} />
 {/if}
 

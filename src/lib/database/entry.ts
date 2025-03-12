@@ -74,4 +74,12 @@ export async function updateEntry(
         JSON.stringify(entry.sections),
         entryId
     ).run();
+
+    await db.prepare(`
+        UPDATE item
+        SET name = ?
+        WHERE id = (
+            SELECT item_id FROM entry WHERE id = ?
+    )`).bind(entry.name, entryId).run();
+    
 }

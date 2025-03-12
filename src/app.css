@@ -1,1 +1,13 @@
 @import "tailwindcss";
+
+.section-html li[data-list="bullet"] {
+    list-style-type: disc;
+    display: list-item;
+    margin-left: 1.5rem;
+}
+
+.section-html li[data-list="ordered"] {
+    list-style-type: decimal;
+    display: list-item;
+    margin-left: 1.5rem;
+}

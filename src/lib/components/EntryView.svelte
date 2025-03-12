@@ -1,11 +1,20 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { capitalizeFirstLetter } from '$lib/utils/stringFormat';
-	import { A, Badge, Button, Card, Carousel, Modal, Table, TableBody, TableBodyCell, TableBodyRow, Thumbnails } from 'flowbite-svelte';
+	import { Badge, Button, Card, Carousel, Modal, Table, TableBody, TableBodyCell, TableBodyRow, Thumbnails } from 'flowbite-svelte';
 	import { EditOutline } from 'flowbite-svelte-icons';
 	import MarkDown from './MarkDown.svelte';
 
-    let { name, tags, images, sections, profileSections, entryImage, canEdit } = $props();
+    let props = $props();
+    
+    let name = $derived(props.name || page.data.name);
+    let tags = $derived(props.tags || page.data.tags || []);
+    let images = $derived(props.images ||page.data.images || []);
+    let sections = $derived(props.sections || page.data.sections || []);
+    let profileSections = $derived(props.profileSections || page.data.profileSections || []);
+    let entryImage = $derived(props.entryImage || page.data.entryImage);
+    let canEdit = $derived(props.canEdit || page.data.canEdit || false);
+    let updatedAt = $derived(props.updatedAt || page.data.updatedAt);
     
     const parsedImages = images.map((image: any) => ({
         alt: image.name,
@@ -47,6 +56,21 @@
         return markdownPatterns.some(pattern => pattern.test(text));
     }
 
+    // Function to convert UTC time to local time
+    function convertUtcToLocal(utcString: string): string {
+        const utcDate = new Date(utcString);
+        const options = { 
+            day: "numeric", 
+            month: "long", 
+            year: "numeric"
+        };
+        // @ts-ignore
+        return utcDate.toLocaleDateString("es", options);
+    }
+
+    // Convert the updatedAt value to local time
+    let localizedUpdatedAt = updatedAt ? convertUtcToLocal(updatedAt) : '';
+
     const itemRoute = page.url.href.split('/');
     const editLink = `/${itemRoute[3]}/editor/${itemRoute[4]}`;
 </script>
@@ -72,6 +96,9 @@ title={selectedImage.title} bind:open={showModal} autoclose outsideclose>
                     </Button>
                 {/if}
             </h1>
+            <div class="text-slate-400">
+                Ultima actualización: {localizedUpdatedAt}
+            </div>
             {#each tags as tag}
                 <Badge class="mx-2 mt-6 mb-6" href={tag.url} large color="dark" border>
                     {capitalizeFirstLetter(tag.name)} 
@@ -101,7 +128,7 @@ title={selectedImage.title} bind:open={showModal} autoclose outsideclose>
 
             {#each sections as section}
                 <h1 class="text-white text-4xl my-6"> {section.title} </h1>
-                <div class="text-white text-lg my-6">{@html section.content}</div>
+                <div class="text-white text-lg my-6 section-html">{@html section.content}</div>
             {/each}
         </div>
         {#if parsedImages.length > 0}

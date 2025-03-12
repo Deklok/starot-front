@@ -72,6 +72,7 @@ interface Entry {
     attributes: EntryAttribute[];
     images: EntryImage[];
     sections: EntrySection[];
+    updatedAt: string;
 
 }
 

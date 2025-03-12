@@ -10,7 +10,7 @@ import { currentWorld } from "$lib/stores/world";
 import { get } from "svelte/store";
 import { isLoading } from "$lib/stores/loading";
 
-export const load: PageServerLoad = async ({ params, platform }) => {
+export const load: PageServerLoad = async ({ params, platform, locals }) => {
     isLoading.set(true);
     // @ts-ignore
     const worldUniqueName: string = params.world; 
@@ -24,8 +24,8 @@ export const load: PageServerLoad = async ({ params, platform }) => {
     const world = await getWorldByUniqueName(DB, worldUniqueName);
     currentWorld.set(world);
 
-
     const worldItems = await getWorldItems(DB, world.id);
+    const canEdit = world.userId === locals.userId;
 
     const folders: LinkItem[] = [];
     const entries: PreviewData[] = [];
@@ -42,6 +42,7 @@ export const load: PageServerLoad = async ({ params, platform }) => {
 
             case 'image':
                 images.push({
+                    id: item.id,
                     name: item.name,
                     url: `${worldUniqueName}/${item.uniqueName}?type=image`,
                     preview: item.preview as string
@@ -50,6 +51,7 @@ export const load: PageServerLoad = async ({ params, platform }) => {
 
             case 'entry':
                 entries.push({
+                    id: item.id,
                     name: item.name,
                     url: `${worldUniqueName}/${item.uniqueName}`,
                     preview: item.entryPreview as string
@@ -69,7 +71,7 @@ export const load: PageServerLoad = async ({ params, platform }) => {
         entries
     }
 
-    return folderData;
+    return {...folderData, canEdit, isWorldRoot: true};
 }
 
 export const actions: Actions = {

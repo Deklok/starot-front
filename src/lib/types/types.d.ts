@@ -1,4 +1,5 @@
 interface PreviewData {
+    id: number;
     name: string;
     url: string;
     preview: string;
@@ -40,9 +41,14 @@ interface EntryViewData {
     tags: CustomTag[];
     images: ImageResponseData[];
     sections: SimpleEntrySection[];
+    updatedAt: string;
 }
 
 interface SimpleItem {
     label: string;
     value: string;
+}
+
+interface Folder extends Item {
+    children: Folder[];
 }
