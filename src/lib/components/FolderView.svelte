@@ -43,6 +43,9 @@
 
 	// Add this function to handle context menu
 	function handleContextMenu(event: any, item: any) {
+		if (!canEdit) {
+			return;
+		}
 		event.preventDefault();
 		selectedItemId = item.id;
 		contextMenuX = event.clientX;
