@@ -285,10 +285,11 @@
 								/>
 							</svg>
 						</div>
-						<div class="ml-4 flex-1">
+						<div class="ml-4 flex-1 text-xl">
 							{folder.name}
 						</div>
 					</div>
+					{#if canEdit}
 					<div class="absolute right-1 bottom-3 flex w-fit justify-end">
 						<Button
 							onclick={(e: any) => handleContextMenu(e, folder, true)}
@@ -298,6 +299,7 @@
 							<DotsVerticalOutline size="xl"></DotsVerticalOutline>
 						</Button>
 					</div>
+					{/if}
 				</Card>
 			{/each}
 		</div>
@@ -312,7 +314,8 @@
 					justify-center"
 					oncontextmenu={(e) => handleContextMenu(e, entry)}
 				>
-					<div class="mt-2 text-2x w-fit">{entry.name}</div>
+					<div class="mt-2 text-2xl w-fit">{entry.name}</div>
+					{#if canEdit}
 					<div class="absolute right-1 bottom-3 flex w-fit justify-end">
 						<Button
 							onclick={(e: any) => handleContextMenu(e, entry)}
@@ -321,6 +324,7 @@
 							<DotsVerticalOutline size="xl"></DotsVerticalOutline>
 						</Button>
 					</div>
+					{/if}
 				</Card>
 			{/each}
 		</div>
@@ -336,6 +340,7 @@
 					oncontextmenu={(e) => handleContextMenu(e, image)}
 				>
 					<div class="mt-2 text-2xl w-fit">{image.name}</div>
+					{#if canEdit}
 					<div class="absolute right-1 bottom-3 flex w-fit justify-end">
 						<Button
 							onclick={(e: any) => handleContextMenu(e, image)}
@@ -345,6 +350,7 @@
 							<DotsVerticalOutline size="xl"></DotsVerticalOutline>
 						</Button>
 					</div>
+					{/if}
 				</Card>
 			{/each}
 		</div>
