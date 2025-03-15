@@ -49,13 +49,17 @@
 	// Smart back button handler
     function handleBack() {
         // Check if current URL contains editor
-        if (page.url.pathname.includes('/editor/')) {
+        history.back();
+		
+		/*
+		if (page.url.pathname.includes('/editor/')) {
             // Navigate to a safe destination instead of using history.back()
-            goto('/worlds');
+            goto('/');
         } else {
             // Use normal back navigation
             history.back();
         }
+			*/
     }
 </script>
 
