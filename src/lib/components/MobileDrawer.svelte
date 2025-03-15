@@ -24,7 +24,7 @@ placement="left" backdrop={false} activateClickOutside={false}>
         <span class="text-2xl font-medium text-white">
             {username}
         </span>
-        <CloseButton on:click={() => ($sidebarOpen = false)} class="mb-4 dark:text-white" />
+        <CloseButton onclick={() => ($sidebarOpen = false)} class="mb-4 dark:text-white" />
     </div>
     {#if !isLoggedIn}
 		<a class="text-white" onclick={() => ($sidebarOpen = false)}

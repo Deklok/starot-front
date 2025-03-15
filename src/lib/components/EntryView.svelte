@@ -35,27 +35,6 @@
         }
     }
 
-    // Function to detect if a string likely contains markdown
-    function isMarkdown(text: string): boolean {
-        if (!text || typeof text !== 'string') return false;
-        
-        // Check for common markdown patterns
-        const markdownPatterns = [
-            /[*_]{1,2}[^*_]+[*_]{1,2}/, // Bold or italic
-            /^#+\s/, // Headers
-            /\[.+?\]\(.+?\)/, // Links
-            /^-\s/, // List items
-            /^>\s/, // Blockquotes
-            /`[^`]+`/, // Inline code
-            /```[\s\S]*?```/, // Code blocks
-            /!\[.+?\]\(.+?\)/, // Images
-            /\|[\s\S]+\|/, // Tables
-            /^---$/ // Horizontal rule
-        ];
-        
-        return markdownPatterns.some(pattern => pattern.test(text));
-    }
-
     // Function to convert UTC time to local time
     function convertUtcToLocal(utcString: string): string {
         const utcDate = new Date(utcString);
@@ -114,11 +93,7 @@ title={selectedImage.title} bind:open={showModal} autoclose outsideclose>
 									{row.label}
 								</TableBodyCell>
 								<TableBodyCell class="font-normal">
-									{#if isMarkdown(row.value)}
-                                        <MarkDown content={row.value} />
-                                    {:else}
-                                        {row.value}
-                                    {/if}
+									<MarkDown content={row.value} />
 								</TableBodyCell>
 							</TableBodyRow>
 						{/each}

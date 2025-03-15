@@ -9,11 +9,12 @@ import { associateTagsToItem } from "$lib/database/tags";
 import { currentWorld } from "$lib/stores/world";
 import { get } from "svelte/store";
 import { isLoading } from "$lib/stores/loading";
+import { tryCatch } from "$lib/utils/trycatch";
 
 export const load: PageServerLoad = async ({ params, platform, locals }) => {
     isLoading.set(true);
     // @ts-ignore
-    const worldUniqueName: string = params.world; 
+    const worldUniqueName: string = params.world;
 
     if (!platform) {
         throw new Error('no platform loaded');
@@ -32,9 +33,10 @@ export const load: PageServerLoad = async ({ params, platform, locals }) => {
     const images: PreviewData[] = [];
 
     worldItems.forEach(item => {
-        switch(item.type) {
+        switch (item.type) {
             case 'folder':
                 folders.push({
+                    id: item.id,
                     name: item.name,
                     url: `${worldUniqueName}/${item.uniqueName}?type=folder`
                 });
@@ -62,7 +64,7 @@ export const load: PageServerLoad = async ({ params, platform, locals }) => {
                 break;
         }
     });
-    
+
     isLoading.set(false);
     const folderData: FolderData = {
         name: world.name,
@@ -71,7 +73,7 @@ export const load: PageServerLoad = async ({ params, platform, locals }) => {
         entries
     }
 
-    return {...folderData, canEdit, isWorldRoot: true};
+    return { ...folderData, canEdit, isWorldRoot: true };
 }
 
 export const actions: Actions = {
@@ -86,11 +88,11 @@ export const actions: Actions = {
         if (world.userId !== locals.userId) {
             throw new Error('no permissions to create here for the user');
         }
-    
+
         if (!platform) {
             throw new Error('no platform loaded');
         }
-        
+
         const DB = platform.env.DB;
 
         const data = await request.formData();
@@ -105,8 +107,8 @@ export const actions: Actions = {
             type: 'folder',
             worldId: world.id
         });
-        await associateTagsToItem(DB, itemId, tags.map((tag: any) => tag.name ));
-        
+        await associateTagsToItem(DB, itemId, tags.map((tag: any) => tag.name));
+
         isLoading.set(false);
         return { success: true };
     },
@@ -121,22 +123,22 @@ export const actions: Actions = {
         if (world.userId !== locals.userId) {
             throw new Error('no permissions to create here for the user');
         }
-    
+
         if (!platform) {
             throw new Error('no platform loaded');
         }
-        
+
         const DB = platform.env.DB;
         const R2BUCKET = platform.env.BUCKET;
-        
+
         const data = await request.formData();
         const imageName = data.get('newImageName') as string;
         const imageUniqueName = formatStringForURL(imageName);
         const tags = JSON.parse(data.get('tags') as string || '[]');
         const imgFile = data.get('image') as File;
-        const r2Key = 
-        `${world.uniqueName}/${imageUniqueName}`;
-        
+        const r2Key =
+            `${world.uniqueName}/${imageUniqueName}`;
+
         const finalImagePath = await uploadFile(R2BUCKET, r2Key, imgFile);
 
         const itemId = await createItem(DB, {
@@ -146,11 +148,42 @@ export const actions: Actions = {
             worldId: world.id
         });
 
-        await associateTagsToItem(DB, itemId, tags.map((tag: any) => tag.name ));
+        await associateTagsToItem(DB, itemId, tags.map((tag: any) => tag.name));
 
         await createImage(DB, itemId, finalImagePath);
 
         isLoading.set(false);
+        return { success: true }
+    },
+    editName: async ({ request, platform, locals }) => {
+        const world = get(currentWorld);
+
+        if (world === null || !locals.userId) {
+            throw new Error('necessary variables not set on action');
+        }
+
+        if (world.userId !== locals.userId) {
+            throw new Error('no permissions to edit here for the user');
+        }
+
+        if (!platform) {
+            throw new Error('no platform loaded');
+        }
+
+        const DB = platform.env.DB;
+
+        const data = await request.formData();
+        const newName = data.get('name') as string;
+        const itemId = Number(data.get('itemId') as string)
+
+        const { error } = await tryCatch(DB.prepare(`
+                UPDATE item SET name = ? WHERE id = ?
+            `).bind(newName, itemId).run());
+        
+        if (error) {
+            throw new Error('error on update name');
+        }
+
         return { success: true }
     }
 }

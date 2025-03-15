@@ -6,6 +6,7 @@ interface PreviewData {
 }
 
 interface LinkItem {
+    id: number;
     name: string;
     url: string;
 }

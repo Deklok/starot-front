@@ -36,30 +36,13 @@
 	let entryName = $state(entryData.name);
 	let tags: CustomTag[] = $state(entryData.tags);
 
+	/* Profile sections / attributes */
 	let profileSections: SimpleItem[] = $state(entryData.profileSections);
 	let parsedProfileSections = $state(
 		profileSections.map((section, index) => ({
 			id: index + 1,
 			label: section.label,
 			value: section.value
-		}))
-	);
-
-	let sections: SimpleEntrySection[] = $state(entryData.sections);
-	let parsedSections = $state(
-		sections.map((section, index) => ({
-			id: index + 1,
-			title: section.title,
-			content: section.content
-		}))
-	);
-
-	let images: ImageResponseData[] = $state(entryData.images);
-	let parsedImages: DraggableGalleryItem[] = $state(
-		images.map((image, index) => ({
-			id: index + 1,
-			name: image.name,
-			url: image.imageUrl
 		}))
 	);
 
@@ -81,19 +64,31 @@
 		});
 	}
 
+	/* Entry sections */
+	let sections: SimpleEntrySection[] = $state(entryData.sections);
+	let parsedSections = $state(
+		sections.map((section, index) => ({
+			id: index + 1,
+			title: section.title,
+			content: section.content
+		}))
+	);
+
+	let images: ImageResponseData[] = $state(entryData.images);
+	let parsedImages: DraggableGalleryItem[] = $state(
+		images.map((image, index) => ({
+			id: index + 1,
+			name: image.name,
+			url: image.imageUrl
+		}))
+	);
+
 	const addSection = () => {
 		parsedSections.push({
 			id: parsedSections.length + 1,
 			title: 'Nueva seccion',
 			content: ''
 		});
-	};
-	
-
-	const confirmRemove = (index: any) => {
-		console.log('confirm to remove ', index);
-		selectedToRemove = index;
-		confirmDelete = true;
 	};
 
 	const removeSection = (id: number) => {
@@ -104,7 +99,14 @@
 		parsedSections.forEach((item: any, index: number) => {
 			item.id = index + 1;
 		});
-	}
+	};
+	
+
+	const confirmRemove = (index: any) => {
+		console.log('confirm to remove ', index);
+		selectedToRemove = index;
+		confirmDelete = true;
+	};
 
 	const openConfirmDelete = () => {
 		confirmDeleteChar = false;
@@ -113,10 +115,11 @@
 
 	async function saveChanges() {
 		isLoading.set(true);
+		backupEntry();
 		const formData = new FormData();
 
 		if (!imgFile && !imgUrl) {
-			return;
+			imgUrl = '/default.png';
 		}
 
 		formData.append(`name`, entryName);
@@ -138,13 +141,19 @@
 			}
 		});
 
-		await fetch('?/newEntry', {
+		const response = await fetch('?/newEntry', {
 			method: 'POST',
 			body: formData
 		});
 
 		isLoading.set(false);
+		if (!response.ok) {
+			notification.open('Error al guardar los cambios', true);
+			return;
+		}
+
 		notification.open(`Cambios guardados yipiiieeee`);
+		clearBackup();
 
 		let worldUniqueName = page.params.world;
 		let entryUniqueName = (page.params.entry)
@@ -165,6 +174,7 @@
 		finalConfirmDeleteChat = false;
 	};
 
+	/* Sorting functions */
 	function handleSortProfileSections(e: any) {
 		parsedProfileSections = e.detail.items;
 	}
@@ -172,6 +182,62 @@
 	function handleSortSections(e: any) {
 		parsedSections = e.detail.items;
 	}
+
+	/* Backup functions */
+	function backupEntry() {
+		try {
+			localStorage.setItem('backup_profile_sections', JSON.stringify(parsedProfileSections));
+        	localStorage.setItem('backup_sections', JSON.stringify(parsedSections));
+        	localStorage.setItem('backup_timestamp', new Date().toISOString());
+		} catch (e: any) {
+			console.error('Error saving backup', e);
+		}
+	}
+
+	function clearBackup() {
+		localStorage.removeItem('backup_profile_sections');
+		localStorage.removeItem('backup_sections');
+		localStorage.removeItem('backup_timestamp');
+	}
+
+	function checkForBackup() {
+		try {
+			const backupProfileSections = localStorage.getItem('backup_profile_sections');
+			const backupSections = localStorage.getItem('backup_sections');
+			const backupTimestamp = localStorage.getItem('backup_timestamp');
+			
+			if (backupProfileSections && backupSections && backupTimestamp) {
+				if (
+					backupSections !== JSON.stringify(parsedSections) ||
+					backupProfileSections !== JSON.stringify(parsedProfileSections)
+				) {
+					// You might want to confirm with the user before restoring
+					const shouldRestore = confirm(
+						`Se encontró un backup diferente del ${new Date(backupTimestamp).toLocaleString()}. ¿Quieres recuperarlo?`
+					);
+					
+					if (shouldRestore) {
+						parsedProfileSections = JSON.parse(backupProfileSections);
+						parsedSections = JSON.parse(backupSections);
+						notification.open('Backup data restored');
+					} else {
+						// Clear backup if user doesn't want to restore
+						clearBackup();
+					}
+				} else {
+					// Clear backup if data is saved
+					clearBackup();
+				}
+			}
+		} catch (e) {
+			console.error('Failed to restore from backup:', e);
+		}
+	}
+
+	// Call this when component is mounted
+	$effect(() => {
+		checkForBackup();
+	});
 </script>
 
 <div class="flex">
@@ -209,7 +275,6 @@
 									<textarea
 										bind:value={row.value}
 										rows="2"
-										
 										class="w-full mt-1 p-2 rounded-md bg-gray-900 text-white"
 										required
 									></textarea>

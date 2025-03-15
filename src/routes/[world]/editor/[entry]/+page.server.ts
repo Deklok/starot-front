@@ -75,7 +75,6 @@ export const actions: Actions = {
         const currentEntryId = get(entryId);
         const currentItemId = get(itemId);
 
-
         if (world === null || !locals.userId || !currentEntryId || !currentItemId) {
             console.log({
                 world,

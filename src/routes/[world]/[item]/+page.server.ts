@@ -12,6 +12,7 @@ import { formatStringForURL } from "$lib/utils/formatUrl";
 import { uploadFile } from "$lib/images/r2";
 import { isLoading } from "$lib/stores/loading";
 import { currentItem } from "$lib/stores/item";
+import { tryCatch } from "$lib/utils/trycatch";
 
 export const load: PageServerLoad = async ({ params, url, platform, locals }) => {
     isLoading.set(true);
@@ -36,6 +37,7 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
     const typeItem = url.searchParams.get('type') || 'entry';
     const parentIdParam = url.searchParams.get('parentId');
     let parentId = (parentIdParam) ? Number(parentIdParam) : undefined;
+    let itemId: number;
 
     let finalResponse;
     switch(typeItem) {
@@ -47,6 +49,7 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
                 'folder',
                 parentId
             );
+            itemId = currentFolder.id;
             currentItem.set(currentFolder);
             const folderTags = await getItemTags(DB, currentFolder.id);
             const folderItems = await getFolderItems(
@@ -63,6 +66,7 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
                 switch(item.type) {
                     case 'folder':
                         folders.push({
+                            id: item.id,
                             name: item.name,
                             url: `/${worldUniqueName}/${item.uniqueName}?parentId=${currentFolder.id}&type=folder`
                         });
@@ -106,7 +110,6 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
             break;
 
         case 'image':
-            
             const currentImage = await getItem(
                 DB, 
                 worldUniqueName,
@@ -115,6 +118,7 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
                 parentId
             );
             currentItem.set(currentImage);
+            itemId = currentImage.id;
             const imageUrl = await getImageForItem(DB, currentImage.id);
             const imageTags = await getItemTags(DB, currentImage.id);
             const imageData: ImageResponseData = {
@@ -137,6 +141,7 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
                 parentId
             );
             currentItem.set(currentEntry);
+            itemId = currentEntry.id;
             const entryTags = await getItemTags(DB, currentEntry.id);
             const entry = await getEntry(
                 DB,
@@ -168,10 +173,14 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
             break;
 
         default:
-
+            itemId = -1;
             break;
     }
     isLoading.set(false);
+
+    if (itemId < 0) {
+        throw new Error('Item found but not valid');
+    }
     
     // Check if private or nsfw
     if (
@@ -182,7 +191,10 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
     ) {
         redirect(302, '/private');
     }
-    return {...finalResponse, type: typeItem, canEdit };
+    console.log({
+        finalResponse
+    });
+    return {...finalResponse, type: typeItem, canEdit, itemId };
 }
 
 export const actions: Actions = {
@@ -286,6 +298,37 @@ export const actions: Actions = {
         const tags = JSON.parse(data.get('tags') as string || '[]');
 
         await updateItemTags(DB, currentItemLocal.id, tags.map((tag: any) => tag.name ));
+
+        return { success: true }
+    },
+    editName: async ({ request, platform, locals }) => {
+        const world = get(currentWorld);
+
+        if (world === null || !locals.userId) {
+            throw new Error('necessary variables not set on action');
+        }
+
+        if (world.userId !== locals.userId) {
+            throw new Error('no permissions to edit here for the user');
+        }
+    
+        if (!platform) {
+            throw new Error('no platform loaded');
+        }
+        
+        const DB = platform.env.DB;
+
+        const data = await request.formData();
+        const newName = data.get('name') as string;
+        const itemId = Number(data.get('itemId') as string)
+
+        const { error } = await tryCatch(DB.prepare(`
+            UPDATE item SET name = ? WHERE id = ?
+        `).bind(newName, itemId).run());
+
+        if (error) {
+            throw new Error('error on update name');
+        }
 
         return { success: true }
     }

@@ -32,7 +32,7 @@
   {#each folders as folder}
     <div class="folder-item">
       <div
-        class="folder-row flex cursor-pointer items-center rounded px-2 py-1 hover:bg-slate-600 {selectedFolder ===
+        class="folder-row flex items-center rounded px-2 py-1 hover:bg-slate-700 {selectedFolder ===
         folder
           ? 'bg-slate-600'
           : ''}"
@@ -40,7 +40,7 @@
         {#if folder.children && folder.children.length > 0}
           <button
             onclick={() => toggleFolder(folder.id)}
-            class="mr-1 flex h-5 w-5 items-center justify-center text-slate-300"
+            class="cursor-pointer mr-1 flex h-5 w-5 items-center justify-center text-slate-300"
           >
             {#if expandedFolders.has(folder.id)}
               <AngleDownOutline size="xl"></AngleDownOutline>
@@ -52,8 +52,8 @@
           <div class="mr-1 h-5 w-5"></div>
         {/if}
 
-        <div
-          class="folder-name flex justify-items-center text-xl"
+        <button
+          class="cursor-pointer folder-name flex justify-items-center text-xl w-full"
           onclick={() => selectFolder(folder)}
         >
           {#if folder.id == 0}
@@ -62,7 +62,7 @@
             <FolderOutline class="mx-2" size="xl"></FolderOutline>
           {/if}
           {folder.name}
-        </div>
+        </button>
       </div>
 
       {#if folder.children && folder.children.length > 0 && expandedFolders.has(folder.id)}

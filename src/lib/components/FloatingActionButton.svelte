@@ -29,7 +29,7 @@
         {#each options as option, i}
           <button 
             class="bg-gray-800 text-white mb-3 py-3 px-4 rounded w-36 text-left shadow-md hover:bg-gray-700 transition-colors"
-            on:click={() => selectOption(option.id)}
+            onclick={() => selectOption(option.id)}
             transition:fly={{ y: 20, duration: 150, delay: i * 50 }}
           >
             <div class="flex">
@@ -52,7 +52,7 @@
     <button
       class="w-14 h-14 rounded-full bg-slate-800 text-white flex justify-center items-center shadow-lg 
       hover:bg-slate-600 transition-colors focus:outline-none"
-      on:click={toggleMenu}
+      onclick={toggleMenu}
     >
       <span class="text-3xl font-bold mb-1">
         {#if isOpen}

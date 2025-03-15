@@ -8,7 +8,13 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { notification } from '$lib/stores/notification';
 	import { capitalizeFirstLetter } from '$lib/utils/stringFormat';
-	import { EditOutline, FolderArrowRightSolid } from 'flowbite-svelte-icons';
+	import {
+		DotsVerticalOutline,
+		EditOutline,
+		EditSolid,
+		FolderArrowRightSolid,
+		TrashBinSolid
+	} from 'flowbite-svelte-icons';
 	import { currentItem } from '$lib/stores/item';
 	import { get } from 'svelte/store';
 	import TreeFolderView from './TreeFolderView.svelte';
@@ -16,12 +22,13 @@
 	let { isLoggedIn } = page.data;
 
 	let props = $props();
-	
+
 	let canEdit = $derived(props.canEdit || page.data.canEdit || false);
 	let folderName = $derived(props.name || page.data.name);
 	let folders = $derived(props.folders || page.data.folders || []);
-	let images = $derived(props.images ||page.data.images || []);
-	let entries = $derived(props.entries ||page.data.entries || []);
+	let images = $derived(props.images || page.data.images || []);
+	let entries = $derived(props.entries || page.data.entries || []);
+	let itemId = $derived(props.itemId || page.data.itemId | -1);
 
 	let newFolderModal = $state(false);
 	let newImageModal = $state(false);
@@ -31,8 +38,6 @@
 	let imgUrl: string | null = $state(null);
 	let editMode = $state(false);
 	let isWorldRoot = $state(page.data.isWorldRoot || false);
-
-	// Update these state variables
 	let showMoveModal = $state(false);
 	let selectedFolder = $state<Folder | null>(null);
 	let selectedItemId = $state(0);
@@ -40,33 +45,41 @@
 	let showContextMenu = $state(false);
 	let contextMenuX = $state(0);
 	let contextMenuY = $state(0);
+	let isFolderContext = $state(false);
+
+	let editNameModal = $state(false);
+	let currentName = $state('');
 
 	// Add this function to handle context menu
-	function handleContextMenu(event: any, item: any) {
+	function handleContextMenu(event: any, item: any, isFolder: boolean = false) {
 		if (!canEdit) {
 			return;
 		}
 		event.preventDefault();
 		selectedItemId = item.id;
+		currentName = item.name;
 		contextMenuX = event.clientX;
 		contextMenuY = event.clientY;
+		isFolderContext = isFolder;
 		showContextMenu = true;
 	}
-	
+
 	// Add function to handle move modal
 	async function openMoveModal() {
 		isLoading.set(true);
 		const worldUniqueName = page.params.world;
-		folderStructure = [{
-			id: 0,
-			children: [],
-			type: 'folder',
-			name: "Raiz",
-			parentId: null,
-			worldId: 0,
-			uniqueName: '',
-			createdAt: ''
-		}];
+		folderStructure = [
+			{
+				id: 0,
+				children: [],
+				type: 'folder',
+				name: 'Raiz',
+				parentId: null,
+				worldId: 0,
+				uniqueName: '',
+				createdAt: ''
+			}
+		];
 		const result = await fetch(`/${worldUniqueName}/folders`);
 		const data = await result.json();
 		folderStructure.push(...data);
@@ -111,9 +124,8 @@
 				// Handle entry creation
 				const worldUniqueName = page.params.world;
 				let redirectUrl = `/${worldUniqueName}/editor`;
-				const currentFolder = get(currentItem);
-				if (currentFolder) {
-					redirectUrl = `${redirectUrl}?parentId=${currentFolder.id}`;
+				if (itemId > 0) {
+					redirectUrl = `${redirectUrl}?parentId=${itemId}`;
 				}
 				goto(redirectUrl);
 				break;
@@ -141,14 +153,20 @@
 
 		formData.append('image', imgFile); // Append the File object
 
-		await fetch(form.action, {
+		const result = await fetch(form.action, {
 			method: 'POST',
 			body: formData
 		});
+		newImageModal = false;
+
+		if (!result.ok) {
+			notification.open('Ay, valio verga algo', true);
+			return;
+		}
+
+		reloadPage();
 
 		notification.open(`Imagen creada`, false);
-		newImageModal = false;
-		reloadPage();
 	}
 
 	async function handleFolderSubmit(event: SubmitEvent) {
@@ -157,37 +175,69 @@
 		const form = event.target as HTMLFormElement;
 		const formData = new FormData(form);
 
-		await fetch(form.action, {
+		const result = await fetch(form.action, {
 			method: 'POST',
 			body: formData
 		});
+		newFolderModal = false;
+
+		if (!result.ok) {
+			notification.open('Ay, valio verga algo', true);
+			return;
+		}
 
 		notification.open(`Carpeta creado`, false);
-		newFolderModal = false;
 		reloadPage();
 	}
 
 	async function updateTags() {
-        isLoading.set(true);
-        const formData = new FormData();
-        formData.append(`tags`, JSON.stringify(tags));
+		isLoading.set(true);
+		const formData = new FormData();
+		formData.append(`tags`, JSON.stringify(tags));
 
-        await fetch('?/updateTags', {
+		const result = await fetch('?/updateTags', {
 			method: 'POST',
 			body: formData
 		});
+		isLoading.set(false);
+		editMode = false;
 
-        isLoading.set(false);
-        notification.open('Tags actualizados yipiieeee');
-        editMode = false;
-    }
+		if (!result.ok) {
+			notification.open('Ay, valio verga algo', true);
+			return;
+		}
+
+		notification.open('Tags actualizados yipiieeee');
+	}
+
+	async function handleNameEdit(event: SubmitEvent) {
+		event.preventDefault();
+		isLoading.set(true);
+		const formData = new FormData();
+		formData.append('name', currentName);
+		formData.append('itemId', selectedItemId.toString());
+		const result = await fetch('?/editName', {
+			method: 'POST',
+			body: formData
+		});
+		editNameModal = false;
+		isLoading.set(false);
+
+		if (!result.ok) {
+			notification.open('Ay, valio verga algo', true);
+			return;
+		}
+		
+		notification.open('Nombre actualizado yipiieeee');
+		reloadPage();
+	}
 </script>
 
 <div class="flex" data-sveltekit-preload-data="false">
 	<div class="m-4 w-full bg-slate-700 p-4">
 		<div class="text-4xl text-white">{folderName}</div>
 		{#if editMode}
-			<div class=" justify-self-start mb-6">
+			<div class=" mb-6 justify-self-start">
 				<TagEditor bind:tags></TagEditor>
 			</div>
 		{:else}
@@ -200,15 +250,12 @@
 		<div class="flex">
 			{#if canEdit && isWorldRoot === false}
 				{#if editMode}
-					<Button onclick={updateTags} color="green">
-						Dale candela
-					</Button>
-					<Button class="mx-2" onclick={() => editMode = !editMode} color="red">
+					<Button onclick={updateTags} color="green">Dale candela</Button>
+					<Button class="mx-2" onclick={() => (editMode = !editMode)} color="red">
 						Me arrepenti we
 					</Button>
 				{:else}
-					<Button onclick={() => editMode = !editMode} 
-					class="mx-2 mt-4" color="dark">
+					<Button onclick={() => (editMode = !editMode)} class="mx-2 mt-4" color="dark">
 						<EditOutline class="mr-3"></EditOutline> Editar tags de carpeta
 					</Button>
 				{/if}
@@ -216,7 +263,11 @@
 		</div>
 		<div class="flex flex-wrap justify-around">
 			{#each folders as folder}
-				<Card href={folder.url} class="mx-1 my-6 w-full md:w-1/3 lg:w-1/4">
+				<Card
+					href={folder.url}
+					oncontextmenu={(e) => handleContextMenu(e, folder, true)}
+					class="relative mx-1 my-6 w-full md:w-1/3 lg:w-1/4"
+				>
 					<div class="flex">
 						<div class="flex-shrink">
 							<svg
@@ -238,6 +289,15 @@
 							{folder.name}
 						</div>
 					</div>
+					<div class="absolute right-1 bottom-3 flex w-fit justify-end">
+						<Button
+							onclick={(e: any) => handleContextMenu(e, folder, true)}
+							class="cursor-pointer p-1"
+							color="dark"
+						>
+							<DotsVerticalOutline size="xl"></DotsVerticalOutline>
+						</Button>
+					</div>
 				</Card>
 			{/each}
 		</div>
@@ -247,12 +307,20 @@
 				<Card
 					href={entry.url}
 					img={entry.preview}
-					class="
+					class="relative
 					m-3 flex w-[15rem] flex-col items-center
 					justify-center"
 					oncontextmenu={(e) => handleContextMenu(e, entry)}
 				>
-					<div class="mt-2 text-2xl">{entry.name}</div>
+					<div class="mt-2 text-2x w-fit">{entry.name}</div>
+					<div class="absolute right-1 bottom-3 flex w-fit justify-end">
+						<Button
+							onclick={(e: any) => handleContextMenu(e, entry)}
+							class="cursor-pointer p-2 hover:bg-slate-800"
+						>
+							<DotsVerticalOutline size="xl"></DotsVerticalOutline>
+						</Button>
+					</div>
 				</Card>
 			{/each}
 		</div>
@@ -263,16 +331,25 @@
 					href={image.url}
 					img={image.preview}
 					horizontal
-					class="
+					class="relative
 					m-3 items-center"
 					oncontextmenu={(e) => handleContextMenu(e, image)}
 				>
-					<div class="mt-2 text-2xl">{image.name}</div>
+					<div class="mt-2 text-2xl w-fit">{image.name}</div>
+					<div class="absolute right-1 bottom-3 flex w-fit justify-end">
+						<Button
+							onclick={(e: any) => handleContextMenu(e, image)}
+							class="cursor-pointer p-1"
+							color="dark"
+						>
+							<DotsVerticalOutline size="xl"></DotsVerticalOutline>
+						</Button>
+					</div>
 				</Card>
 			{/each}
 		</div>
 		{#if folders.length === 0 && entries.length === 0 && images.length === 0}
-			<div class="text-white text-2xl mt-4 text-center">No hay nada aqui</div>
+			<div class="mt-4 text-center text-2xl text-white">No hay nada aqui</div>
 		{/if}
 	</div>
 </div>
@@ -330,53 +407,75 @@
 	</form>
 </Modal>
 
+<Modal classBody="flex justify-center" title="Editar nombre" bind:open={editNameModal} outsideclose>
+	<form
+		method="POST"
+		action="?/editName"
+		onsubmit={handleNameEdit}
+		class="flex w-[90%] flex-col justify-center self-center"
+	>
+		<FloatingLabelInput
+			class="mb-4 self-center"
+			id="newFolderName"
+			name="newFolderName"
+			type="text"
+			bind:value={currentName}
+		>
+			Nombre
+		</FloatingLabelInput>
+		<Button type="submit" class="my-5 w-[70%] self-center" color="green"
+			>Editar nombre</Button
+		>
+	</form>
+</Modal>
+
 <!-- Add context menu -->
 {#if showContextMenu}
-  <div 
-    class="absolute z-50 bg-gray-800 border border-gray-700 rounded-lg shadow-lg"
-    style="left: {contextMenuX}px; top: {contextMenuY}px"
-  >
-    <ul>
-      <li class="hover:bg-slate-700">
-		<div class="flex text-white">
-			<FolderArrowRightSolid size="lg" class="m-4"
-			></FolderArrowRightSolid>
-			<button 
-			class="w-full text-left px-4 py-2 text-xl"
-			onclick={openMoveModal}
-			>
-			Mover a otra carpeta
-			</button>
-		</div>
-      </li>
-    </ul>
-  </div>
+	<div
+		class="absolute z-50 rounded-lg border border-gray-700 bg-gray-800 shadow-lg"
+		style="left: {contextMenuX}px; top: {contextMenuY}px"
+	>
+		<ul>
+			{#if isFolderContext === false}
+				<li class="hover:bg-slate-700">
+					<Button class="flex text-white p-1">
+						<FolderArrowRightSolid size="lg" class="m-4"></FolderArrowRightSolid>
+						<button class="w-full px-4 py-2 text-left text-xl" onclick={openMoveModal}>
+							Mover a otra carpeta
+						</button>
+					</Button>
+				</li>
+			{/if}
+			<li class="hover:bg-slate-700">
+				<Button class="flex text-white p-1">
+					<EditSolid size="lg" class="m-4"></EditSolid>
+					<button class="w-full px-4 py-2 text-left text-xl" 
+					onclick={() => {
+							editNameModal = true;
+							showContextMenu = false;
+						}}>
+						Cambiar nombre
+					</button>
+				</Button>
+			</li>
+		</ul>
+	</div>
 {/if}
 
 <!-- Click outside to close context menu -->
 {#if showContextMenu}
-  <div 
-    class="fixed inset-0 z-40" 
-    onclick={() => showContextMenu = false}
-  ></div>
+	<div class="fixed inset-0 z-40" onclick={() => (showContextMenu = false)}></div>
 {/if}
 
-<Modal
-  title="Mover a otra carpeta"
-  bind:open={showMoveModal}
-  outsideclose
->
-  <div class="p-4">
-    <TreeFolderView
-	folders={folderStructure}
-	bind:selectedFolder={selectedFolder}
-	></TreeFolderView>
-    
-    <div class="flex justify-end space-x-2 mt-4">
-      <Button color="red" onclick={() => showMoveModal = false}>Cancelar</Button>
-      <Button color="green" onclick={moveItem} disabled={!selectedFolder}>Mover</Button>
-    </div>
-  </div>
+<Modal title="Mover a otra carpeta" bind:open={showMoveModal} outsideclose>
+	<div class="p-4">
+		<TreeFolderView folders={folderStructure} bind:selectedFolder></TreeFolderView>
+
+		<div class="mt-4 flex justify-end space-x-2">
+			<Button color="red" onclick={() => (showMoveModal = false)}>Cancelar</Button>
+			<Button color="green" onclick={moveItem} disabled={!selectedFolder}>Mover</Button>
+		</div>
+	</div>
 </Modal>
 
 {#if isLoggedIn && canEdit}

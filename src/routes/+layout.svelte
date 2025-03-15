@@ -45,6 +45,18 @@
 	function search() {
 		goto(`/search?query=${query}`);
 	}
+
+	// Smart back button handler
+    function handleBack() {
+        // Check if current URL contains editor
+        if (page.url.pathname.includes('/editor/')) {
+            // Navigate to a safe destination instead of using history.back()
+            goto('/worlds');
+        } else {
+            // Use normal back navigation
+            history.back();
+        }
+    }
 </script>
 
 <div class="flex h-screen overflow-hidden" data-sveltekit-preload-data="false">
@@ -57,7 +69,7 @@
 		<Navbar class="!bg-slate-800">
 			<div class="flex items-center">
 				<!-- Toggle button with appropriate icon -->
-				<Button class="mr-2" pill size="sm" onclick={toggleSidebar}>
+				<Button class="mr-2" pill size="sm" color="dark" onclick={toggleSidebar}>
 					{#if $sidebarOpen}
 						<CloseOutline></CloseOutline>
 					{:else}
@@ -90,7 +102,7 @@
 			<div class="bg-slate-700 rounded-lg m-2 p-6">
 				{#if page.url.pathname !== '/'}
 					<Button color="dark" class="mb-8"
-					onclick={() => { history.back() }}>
+					onclick={handleBack}>
 						<ArrowLeftOutline
 						></ArrowLeftOutline>
 					</Button>

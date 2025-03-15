@@ -55,7 +55,7 @@
                 {capitalizeFirstLetter(tag.name)}
             </Badge>
             <Button
-                on:click={() => closeBadge(i)}
+                onclick={() => closeBadge(i)}
                 pill
                 outline
                 color="dark"

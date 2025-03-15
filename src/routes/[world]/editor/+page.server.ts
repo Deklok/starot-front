@@ -91,7 +91,7 @@ export const actions: Actions = {
 
         const name = data.get('name') as string;
         const tags = JSON.parse(data.get('tags') as string || '[]');
-        const imgFile = data.get('image') as File;
+        const imgFile = data.get('image');
         const profileSections = JSON.parse(data.get('profile_sections') as string || '[]');
         const sections = JSON.parse(data.get('sections') as string || '[]');
         
@@ -114,11 +114,17 @@ export const actions: Actions = {
         await associateTagsToItem(DB, itemId, tags.map((tag: any) => tag.name ));
 
         // Upload images from the entry
-        const mainEntryImage = await uploadFile(
-            R2BUCKET,
-            `${world.uniqueName}/${entryUniqueName}/main`,
-            imgFile
-        );
+        let mainEntryImage: string = '';
+        if (imgFile instanceof File) {
+            // Upload images from the entry
+            mainEntryImage = await uploadFile(
+                R2BUCKET,
+                `${world.uniqueName}/${entryUniqueName}/main`,
+                imgFile
+            );
+        } else {
+            mainEntryImage = imgFile as string;
+        }
 
         let entryImagesUrl: string[] = [];
         await Promise.all(entryImages.map( async (image, index) => {

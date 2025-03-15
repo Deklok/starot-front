@@ -14,16 +14,19 @@
 	/* Basic styling for markdown content */
 	.markdown-content :global(p) {
 		margin-bottom: 0em;
+		white-space: break-spaces;
 	}
 
 	.markdown-content :global(ul) {
-		margin-left: 0em;
+		margin-left: 1.2em;
 		margin-bottom: 0em;
+		list-style-type: disc;
 	}
 
     .markdown-content :global(ol) {
-		margin-left: 0em;
+		margin-left: 1.2em;
 		margin-bottom: 0em;
+		list-style-type: decimal;
 	}
 
 	.markdown-content :global(a) {

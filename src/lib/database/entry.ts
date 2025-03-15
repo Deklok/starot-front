@@ -32,6 +32,37 @@ export async function getEntry(
     return entryParsed;
 }
 
+export async function getEntryIdByUniqueName(
+    dbInput: D1Database,
+    uniqueName: string,
+    worldUniqueName: string
+): Promise<number> {
+    db = dbInput;
+    console.log('entryById query', 
+        `
+        SELECT id FROM entry
+        WHERE item_id in (
+            SELECT id FROM item WHERE unique_name = ${uniqueName} AND 
+            world_id = (SELECT id FROM world WHERE unique_name = ${worldUniqueName})
+        )
+        `
+    );
+    const result = await db.prepare(`
+        SELECT id FROM entry
+        WHERE item_id in (
+            SELECT id FROM item WHERE unique_name = ? AND 
+            world_id = (SELECT id FROM world WHERE unique_name = ?)
+        )
+    `).bind(uniqueName, worldUniqueName)
+    .first();
+
+    if (result === null) {
+        throw new Error(`Entry not found`);
+    }
+
+    return result.id as number;
+}
+
 export async function createEntry(
     dbInput: D1Database,
     itemId: number,

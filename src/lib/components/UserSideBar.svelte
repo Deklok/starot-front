@@ -2,6 +2,7 @@
 <script lang="ts">
 	import { sidebarOpen } from '$lib/stores/sidebarStore';
 	import {
+		Button,
 		Sidebar as FlowbiteSidebar,
 		SidebarGroup,
 		SidebarItem,
@@ -82,11 +83,3 @@
 		</SidebarWrapper>
 	</FlowbiteSidebar>
 </div>
-
-<!-- Overlay to close sidebar on mobile when it's open -->
-{#if $sidebarOpen}
-	<div 
-		class="fixed inset-0 z-30 bg-black bg-opacity-50 md:hidden"
-		on:click={() => $sidebarOpen = false}
-	></div>
-{/if}
