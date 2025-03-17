@@ -16,26 +16,22 @@
     let canEdit = $derived(props.canEdit || page.data.canEdit || false);
     let updatedAt = $derived(props.updatedAt || page.data.updatedAt);
     
-    const parsedImages = images.map((image: any) => ({
+    const carouselImages = images.map((image: any) => ({
         alt: image.name,
         src: image.imageUrl,
         title: image.name
     }));
-    const profileImage = entryImage;
     
     let index = $state(0);
     let forward = $state(true);
     let showModal = $state(false);
-    let selectedImage: any = $state(null);
 
     function openModal(event: any) {
         if (event.target.classList.contains('full-screen-viewable')) {
-            selectedImage = parsedImages[index];
             showModal = true;
         }
     }
 
-    // Function to convert UTC time to local time
     function convertUtcToLocal(utcString: string): string {
         const utcDate = new Date(utcString);
         const options = { 
@@ -47,23 +43,25 @@
         return utcDate.toLocaleDateString("es", options);
     }
 
-    // Convert the updatedAt value to local time
-    let localizedUpdatedAt = updatedAt ? convertUtcToLocal(updatedAt) : '';
-
     const itemRoute = page.url.href.split('/');
     const editLink = `/${itemRoute[3]}/editor/${itemRoute[4]}`;
 </script>
 
-{#if selectedImage}
 <Modal classDialog="justify-self-center"
-bodyClass="object-scale-down" 
-classBody="w-fit justify-self-center" 
-defaultClass="w-fit" 
+classBody="w-full justify-self-center h-[95vh]" 
+defaultClass="w-full" 
 classHeader="hidden" size="xl"
-title={selectedImage.title} bind:open={showModal} autoclose outsideclose>  
-    <img class="max-h-[95vh] justify-self-center" src={selectedImage.src} alt={selectedImage.alt} />
+title="Galeria" bind:open={showModal} autoclose outsideclose>  
+    <Carousel
+        class="h-[90vh]!"
+        imgClass="w-full h-full object-contain"
+        images={carouselImages}
+        let:Indicators let:Controls 
+        bind:index>
+        <Controls />
+        <Indicators />
+    </Carousel>
 </Modal>
-{/if}
 
 <div class="flex w-full">
 	<main class="w-full flex flex-wrap justify-center">
@@ -76,14 +74,14 @@ title={selectedImage.title} bind:open={showModal} autoclose outsideclose>
                 {/if}
             </h1>
             <div class="text-slate-400">
-                Ultima actualización: {localizedUpdatedAt}
+                Ultima actualización: {convertUtcToLocal(updatedAt)}
             </div>
             {#each tags as tag}
                 <Badge class="mx-2 mt-6 mb-6" href={tag.url} large color="dark" border>
                     {capitalizeFirstLetter(tag.name)} 
                 </Badge>
             {/each}
-            <Card img={profileImage} 
+            <Card img={entryImage} 
             class="flex md:float-right m-0 md:m-6 max-w-max md:max-w-[500px]">
                 <Table striped={true}>
 					<TableBody tableBodyClass="divide-y">
@@ -106,14 +104,14 @@ title={selectedImage.title} bind:open={showModal} autoclose outsideclose>
                 <div class="text-white text-lg my-6 section-html">{@html section.content}</div>
             {/each}
         </div>
-        {#if parsedImages.length > 0}
+        {#if carouselImages.length > 0}
         <div class="py-12">
             <div class="cursor-pointer" onclick={openModal}>
-                <Carousel imgClass="full-screen-viewable" class="my-3" images={parsedImages} {forward} let:Indicators let:Controls bind:index>
-                    <Controls class="ignore-this" />
-                    <Indicators class="ignore-this" />
+                <Carousel imgClass="full-screen-viewable" class="my-3" images={carouselImages} {forward} let:Indicators let:Controls bind:index>
+                    <Controls/>
+                    <Indicators/>
                 </Carousel>
-                <Thumbnails class="bg-transparent gap-3" let:Thumbnail let:image let:selected images={parsedImages} bind:index>
+                <Thumbnails class="bg-transparent gap-3" let:Thumbnail let:image let:selected images={carouselImages} bind:index>
                     <Thumbnail {...image} {selected} 
                     class="max-h-64 rounded-md shadow-xl hover:outline hover:outline-primary-500" 
                     activeClass="outline outline-primary-400"
