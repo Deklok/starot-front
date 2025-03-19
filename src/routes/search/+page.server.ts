@@ -27,6 +27,7 @@ function groupItemsByWorld(itemResults: ItemSearchResult[]) {
         switch (item.type) {
             case 'folder':
                 currentWorld.folders.push({
+                    id: item.id,
                     name: item.name,
                     url: `${item.worldUniqueName}/${item.uniqueName}?type=folder`
                 });
@@ -34,6 +35,7 @@ function groupItemsByWorld(itemResults: ItemSearchResult[]) {
 
             case 'image':
                 currentWorld.images.push({
+                    id: item.id,
                     name: item.name,
                     url: `${item.worldUniqueName}/${item.uniqueName}?type=image`,
                     preview: item.preview as string
@@ -42,6 +44,7 @@ function groupItemsByWorld(itemResults: ItemSearchResult[]) {
 
             case 'entry':
                 currentWorld.entries.push({
+                    id: item.id,
                     name: item.name,
                     url: `${item.worldUniqueName}/${item.uniqueName}`,
                     preview: item.entryPreview as string

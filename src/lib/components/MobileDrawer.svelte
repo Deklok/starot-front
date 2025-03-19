@@ -3,11 +3,12 @@
 	import { sidebarOpen } from '$lib/stores/sidebarStore';
 	import { GlobeSolid, HomeSolid } from 'flowbite-svelte-icons';
 	import { sineIn } from 'svelte/easing';
+	import WorldTreeView from './WorldTreeView.svelte';
 
 	export let username: string;
 	export let isLoggedIn: boolean;
 	export let worlds: World[];
-	export let userWorlds: World[];
+	export let userWorlds: Folder[];
 
     let transitionParams = {
         x: -320,
@@ -44,21 +45,7 @@ placement="left" backdrop={false} activateClickOutside={false}>
 			</SidebarGroup>
 			<SidebarGroup border>
 				<div class="py-3 px-2 text-gray-300">Mis mundos</div>
-				{#each userWorlds as world}
-					<SidebarItem onclick={() => ($sidebarOpen = false)}
-                    href={`/${world.uniqueName}`} activeClass="bg-gray-700">
-						<svelte:fragment slot="icon">
-							<GlobeSolid
-								class="h-5 w-5 text-gray-500 transition duration-75 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-white"
-							/>
-						</svelte:fragment>
-						<svelte:fragment slot="subtext">
-							<div class="flex flex-col w-fit">
-								<div class="text-lg block" > {world.name} </div>
-							</div>	
-						</svelte:fragment>
-					</SidebarItem>
-				{/each}
+				<WorldTreeView folders={userWorlds}/>
 			</SidebarGroup>
 			<SidebarGroup border>
 				<div class="py-3 px-2 text-gray-300">Otros mundos</div>

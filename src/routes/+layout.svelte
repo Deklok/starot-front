@@ -10,13 +10,13 @@
 	import Notification from '$lib/components/Notification.svelte';
 	import Loading from '$lib/components/Loading.svelte';
 	import MobileDrawer from '$lib/components/MobileDrawer.svelte';
-	import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
-	import { writable } from 'svelte/store';
+	import { goto } from '$app/navigation';
 
 	const username = $derived(page.data.username);
 	const isLoggedIn = $derived(page.data.isLoggedIn);
 	const worlds = $derived(page.data.worlds);
 	const userWorlds = $derived(page.data.userWorlds);
+	const folderWorldsStructure = $derived(page.data.folderWorldsStructure);
 
 	let query: string = $state(``);
 	
@@ -55,7 +55,7 @@
 
 <div class="flex h-screen overflow-hidden" data-sveltekit-preload-data="false">
 	<!-- Sidebar -->
-	<UserSideBar {isLoggedIn} {username} {worlds} {userWorlds} />
+	<UserSideBar {isLoggedIn} {username} {worlds} userWorlds={folderWorldsStructure} />
 
 	<!-- Main content - takes full width when sidebar is closed -->
 	<div class="z-40 flex flex-col flex-1 w-full transition-all duration-300 ease-in-out 
@@ -108,7 +108,7 @@
 	</div>
 
 	<div class="md:hidden">
-        <MobileDrawer {isLoggedIn} {username} {worlds} {userWorlds} />
+        <MobileDrawer {isLoggedIn} {username} {worlds} userWorlds={folderWorldsStructure} />
     </div>
 </div>
 <Loading></Loading>

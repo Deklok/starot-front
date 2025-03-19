@@ -50,6 +50,10 @@ interface SimpleItem {
     value: string;
 }
 
-interface Folder extends Item {
+interface Folder {
+    id: number;
+    uniqueName: string;
+    parentId: number;
+    name: string;
     children: Folder[];
 }

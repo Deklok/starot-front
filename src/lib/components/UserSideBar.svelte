@@ -12,12 +12,14 @@
 		GlobeSolid,
 		HomeSolid
 	} from 'flowbite-svelte-icons';
+	import WorldTreeView from './WorldTreeView.svelte';
 
 	// Sample user data (replace with your actual user data)
 	export let username: string;
 	export let isLoggedIn: boolean;
 	export let worlds: World[];
-	export let userWorlds: World[];
+	export let userWorlds: Folder[];
+	console.log('userWorlds', userWorlds);
 </script>
 
 <!-- Sidebar with fixed positioning and dark theme to match your screenshot -->
@@ -49,19 +51,7 @@
 			</SidebarGroup>
 			<SidebarGroup border>
 				<div class="py-3 px-2 text-gray-300">Mis mundos</div>
-				{#each userWorlds as world}
-				<SidebarItem href={`/${world.uniqueName}`}
-				activeClass="bg-gray-700" class="text-white hover:bg-gray-700">
-					<svelte:fragment slot="icon">
-						<GlobeSolid class="text-gray-300" />
-					</svelte:fragment>
-					<svelte:fragment slot="subtext">
-						<div class="flex flex-col w-fit">
-							<div class="text-lg block" > {world.name} </div>
-						</div>	
-					</svelte:fragment>
-				</SidebarItem>	
-				{/each}
+				<WorldTreeView folders={userWorlds}/>
 			</SidebarGroup>			
 			<SidebarGroup border>							
 				<div class="py-3 px-2 text-gray-300">Otros mundos</div>

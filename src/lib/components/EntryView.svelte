@@ -106,7 +106,7 @@ title="Galeria" bind:open={showModal} autoclose outsideclose>
             {/each}
         </div>
         {#if carouselImages.length > 0}
-        <div class="py-12">
+        <div class="py-12 w-full">
             <div class="cursor-pointer" onclick={openModal}>
                 <Carousel imgClass="full-screen-viewable" class="my-3" images={carouselImages} {forward} let:Indicators let:Controls bind:index>
                     <Controls/>

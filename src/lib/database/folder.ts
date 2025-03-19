@@ -56,7 +56,7 @@ export async function getFolderStructure(
     worldId: number
 ): Promise<Folder[]> {
     const results = await db.prepare(`
-        SELECT * FROM item
+        SELECT id, name, parent_id, unique_name FROM item
         WHERE 
         world_id = ? AND
         type = 'folder'
