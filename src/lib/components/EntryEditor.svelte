@@ -17,6 +17,7 @@
 	import { dndzone } from 'svelte-dnd-action';
 	import { notification } from '$lib/stores/notification';
 	import { page } from '$app/state';
+	import ConfirmModal from './ConfirmModal.svelte';
 
 	let { entryData = $bindable(), uniqueName } = $props<{
 		entryData: EntryViewData;
@@ -387,40 +388,41 @@
 		</div>
 	</div>
 </div>
-<Modal title="Tas seguro boludo?" bind:open={confirmDelete} autoclose>
-	<p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
-		Tas seguro de que quieres quitar la seccion {
-			parsedSections.find((a: any) => a.id === selectedToRemove)?.title
-		}
-	</p>
-	<svelte:fragment slot="footer">
-		<Button onclick={() => removeSection(selectedToRemove)}>Si, de una</Button>
-		<Button color="red">No, me mame</Button>
-	</svelte:fragment>
-</Modal>
 
-<Modal title="Tas apunto de borrar el articulo" bind:open={confirmDeleteChar} autoclose>
-	<p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
-		Tas seguro de que quieres borrar este articulo? <b>TODO</b> lo guardado en la wiki se va a eliminar
-	</p>
-	<svelte:fragment slot="footer">
-		<Button onclick={() => openConfirmDelete()}>Si, de una</Button>
-		<Button color="red">No, me mame</Button>
-	</svelte:fragment>
-</Modal>
-
-<Modal
-	title="TAS SEGURISIMO BOLUDO?"
-	class="max-h-[90vh]"
-	bind:open={finalConfirmDeleteChat}
-	autoclose
+<ConfirmModal 
+    title="Tas seguro boludo?" 
+    bind:open={confirmDelete} 
+    autoclose 
+    onConfirm={() => removeSection(selectedToRemove)}
 >
-	<p class="text-4xl leading-relaxed text-gray-500 dark:text-gray-400">
-		ESTAS TOTALMENTE SEGURX DE QUE NO ES UN MELTDOWN Y ESTAS EN TODAS TUS FUCKING CAPACIDADES
-		MENTALES DE TOMAR ESTA DECISION??????????
-	</p>
-	<svelte:fragment slot="footer">
-		<Button onclick={() => beginDeleteCharacter()}>Que si la ptm, denle fuego</Button>
-		<Button color="red">No, me mame</Button>
-	</svelte:fragment>
-</Modal>
+    <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+        Tas seguro de que quieres quitar la seccion {
+            parsedSections.find((a: any) => a.id === selectedToRemove)?.title
+        }
+    </p>
+</ConfirmModal>
+
+<ConfirmModal 
+    title="Tas apunto de borrar el articulo" 
+    bind:open={confirmDeleteChar} 
+    autoclose
+    onConfirm={() => openConfirmDelete()}
+>
+    <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+        Tas seguro de que quieres borrar este articulo? <b>TODO</b> lo guardado en la wiki se va a eliminar
+    </p>
+</ConfirmModal>
+
+<ConfirmModal
+    title="TAS SEGURISIMO BOLUDO?"
+    customClass="max-h-[90vh]"
+    bind:open={finalConfirmDeleteChat}
+    autoclose
+    confirmText="Que si la ptm, denle fuego"
+    onConfirm={() => beginDeleteCharacter()}
+>
+    <p class="text-4xl leading-relaxed text-gray-500 dark:text-gray-400">
+        ESTAS TOTALMENTE SEGURX DE QUE NO ES UN MELTDOWN Y ESTAS EN TODAS TUS FUCKING CAPACIDADES
+        MENTALES DE TOMAR ESTA DECISION??????????
+    </p>
+</ConfirmModal>

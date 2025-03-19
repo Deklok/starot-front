@@ -10,7 +10,8 @@
 	import Notification from '$lib/components/Notification.svelte';
 	import Loading from '$lib/components/Loading.svelte';
 	import MobileDrawer from '$lib/components/MobileDrawer.svelte';
-	import { goto } from '$app/navigation';
+	import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
+	import { writable } from 'svelte/store';
 
 	const username = $derived(page.data.username);
 	const isLoggedIn = $derived(page.data.isLoggedIn);
@@ -28,14 +29,14 @@
 	function handleResize() {
 		$sidebarOpen = window.innerWidth >= 1300;
 	}
-	
+
 	onMount(() => {
 		// Add resize listener
 		window.addEventListener('resize', handleResize);
 		
 		// Initialize sidebar state based on current window size
 		handleResize();
-		
+
 		// Cleanup listener on component destroy
 		return () => {
 			window.removeEventListener('resize', handleResize);
@@ -47,20 +48,9 @@
 	}
 
 	// Smart back button handler
-    function handleBack() {
-        // Check if current URL contains editor
-        history.back();
-		
-		/*
-		if (page.url.pathname.includes('/editor/')) {
-            // Navigate to a safe destination instead of using history.back()
-            goto('/');
-        } else {
-            // Use normal back navigation
-            history.back();
-        }
-			*/
-    }
+	function handleBack() {
+		history.back();
+	}
 </script>
 
 <div class="flex h-screen overflow-hidden" data-sveltekit-preload-data="false">

@@ -167,7 +167,7 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
                     title: sec.title,
                     content: sec.content
                 })),
-                updatedAt: entry.updatedAt
+                updatedAt: entry.updatedAt || currentEntry.createdAt
             }
             finalResponse = entryData;
             break;

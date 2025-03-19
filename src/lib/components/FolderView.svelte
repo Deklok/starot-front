@@ -15,9 +15,8 @@
 		FolderArrowRightSolid,
 		TrashBinSolid
 	} from 'flowbite-svelte-icons';
-	import { currentItem } from '$lib/stores/item';
-	import { get } from 'svelte/store';
 	import TreeFolderView from './TreeFolderView.svelte';
+	import ConfirmModal from './ConfirmModal.svelte';
 
 	let { isLoggedIn } = page.data;
 
@@ -49,6 +48,9 @@
 
 	let editNameModal = $state(false);
 	let currentName = $state('');
+
+	let confirmDelete = $state(false);
+	let finalConfirmDelete = $state(false);
 
 	// Add this function to handle context menu
 	function handleContextMenu(event: any, item: any, isFolder: boolean = false) {
@@ -229,6 +231,30 @@
 		}
 		
 		notification.open('Nombre actualizado yipiieeee');
+		reloadPage();
+	}
+
+	async function beginDeleteItem() {
+		console.log('id to delete ', selectedItemId);
+
+		isLoading.set(true);
+		const formData = new FormData();
+		formData.append('itemId', selectedItemId.toString());
+
+		const worldUniqueName = page.params.world;
+		const result = await fetch(`/${worldUniqueName}/folders`, {
+			method: 'DELETE',
+			body: formData
+		});
+		isLoading.set(false);
+		
+		if (!result.ok) {
+			notification.open('Ay, valio verga algo', true);
+			return;
+		}
+
+		notification.open('Coso eliminado yipiieee!');
+		finalConfirmDelete = false;
 		reloadPage();
 	}
 </script>
@@ -444,24 +470,31 @@
 		<ul>
 			{#if isFolderContext === false}
 				<li class="hover:bg-slate-700">
-					<Button class="flex text-white p-1">
+					<Button class="flex text-white pl-2 w-full justify-start" 
+					onclick={openMoveModal}>
 						<FolderArrowRightSolid size="lg" class="m-4"></FolderArrowRightSolid>
-						<button class="w-full px-4 py-2 text-left text-xl" onclick={openMoveModal}>
-							Mover a otra carpeta
-						</button>
+						Mover a otra carpeta
 					</Button>
 				</li>
 			{/if}
 			<li class="hover:bg-slate-700">
-				<Button class="flex text-white p-1">
+				<Button onclick={() => {
+					editNameModal = true;
+					showContextMenu = false;
+				}}
+				class="flex text-white pl-2 w-full justify-start">
 					<EditSolid size="lg" class="m-4"></EditSolid>
-					<button class="w-full px-4 py-2 text-left text-xl" 
-					onclick={() => {
-							editNameModal = true;
-							showContextMenu = false;
-						}}>
-						Cambiar nombre
-					</button>
+					Cambiar nombre
+				</Button>
+			</li>
+			<li class="hover:bg-red-700">
+				<Button onclick={() => {
+					confirmDelete = true;
+					showContextMenu = false;
+				}}
+				class="flex text-white pl-2 w-full justify-start">
+					<TrashBinSolid size="lg" class="m-4"></TrashBinSolid>
+					Eliminar
 				</Button>
 			</li>
 		</ul>
@@ -487,6 +520,35 @@
 {#if isLoggedIn && canEdit}
 	<FloatingActionButton onSelect={handleOptionSelect} />
 {/if}
+
+<ConfirmModal 
+    title="Tas apunto de borrar el articulo" 
+    bind:open={confirmDelete} 
+    autoclose
+    onConfirm={() => {
+		finalConfirmDelete = true;
+		confirmDelete = false;
+	}}
+>
+    <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+        Tas seguro de que quieres borrar este articulo? <b>TODO</b> lo guardado en la wiki se va a eliminar
+    </p>
+</ConfirmModal>
+
+<ConfirmModal
+    title="TAS SEGURISIMO BOLUDO?"
+    customClass="max-h-[90vh]"
+    bind:open={finalConfirmDelete}
+    autoclose
+    confirmText="Que si la ptm, denle fuego"
+    onConfirm={() => beginDeleteItem()}
+>
+    <p class="text-4xl leading-relaxed text-gray-500 dark:text-gray-400">
+        ESTAS TOTALMENTE SEGURX DE QUE NO ES UN MELTDOWN Y ESTAS EN TODAS TUS FUCKING CAPACIDADES
+        MENTALES DE TOMAR ESTA DECISION??????????
+    </p>
+</ConfirmModal>
+
 
 <style>
 	hr.folder {

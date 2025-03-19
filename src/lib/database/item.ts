@@ -1,5 +1,7 @@
+import { extractKeyFromURL } from "$lib/utils/formatUrl";
+import { tryCatch } from "$lib/utils/trycatch";
 import { transformToCamelCase } from "$lib/utils/underToCamelCase";
-import type { D1Database } from "@cloudflare/workers-types";
+import type { D1Database, R2Bucket } from "@cloudflare/workers-types";
 
 export async function createItem(
     db: D1Database,
@@ -53,6 +55,141 @@ export async function getItem(
     }
 
     return transformToCamelCase<Item>(result);
+}
+
+export async function deleteItemById(
+    db: D1Database,
+    bucket: R2Bucket,
+    id: number
+): Promise<void> {
+    const result = await db.prepare(`SELECT * FROM item WHERE id = ?`)
+        .bind(id)
+        .first();
+
+    if (!result) {
+        throw new Error('Item not found');
+    }
+
+    if (result.type === 'folder') {
+        await deleteFolders(db, bucket, [id]);
+    }
+
+    if (result.type === 'image') {
+        await deleteImages(db, bucket, [id]);
+    }
+
+    if (result.type === 'entry') {
+        await deleteEntries(db, bucket, [id]);
+    }
+}
+
+async function deleteFolders(
+    db: D1Database,
+    bucket: R2Bucket,
+    itemIds: number[]
+): Promise<void> {
+    for (const itemId of itemIds) {
+        // Find all child item IDs and their types
+        const children = await db.prepare(`
+            SELECT id, type FROM item WHERE parent_id = ?
+        `).bind(itemId).all<{ id: number, type: string }>();
+
+        // Recursively delete child folders first
+        if (children.results.length > 0) {           
+            const folderIds = children.results.filter(child => child.type === 'folder').map(child => child.id);
+            const imagesIds = children.results.filter(child => child.type === 'image').map(child => child.id);
+            const entriedIds = children.results.filter(child => child.type === 'entry').map(child => child.id);
+            
+            await deleteFolders(db, bucket, folderIds);
+            await deleteImages(db, bucket, imagesIds);
+            await deleteEntries(db, bucket, entriedIds);
+        }
+
+        // Delete item tags associated with the current item
+        await db.prepare(`DELETE FROM item_tag WHERE item_id = ?`).bind(itemId).run();
+        // Finally, delete the item itself
+        await db.prepare(`DELETE FROM item WHERE id = ?`).bind(itemId).run();
+    }
+}
+
+async function deleteEntries(
+    db: D1Database,
+    bucket: R2Bucket,
+    itemIds: number[]
+): Promise<void> {
+    const ids = itemIds.join(', ');
+    
+    const entries = await db.prepare(`
+        SELECT images,image_url FROM entry WHERE item_id IN (?)
+        `).bind(ids).all();
+    if (entries.error) {
+        throw new Error('Error looking for entries');
+    }
+
+    const entryImages = entries.results.map(entry => JSON.parse(entry.images as string));
+
+    const imagePaths = entryImages.reduce((acc, images) => {
+        acc.push(...images.map((image: any) => image.filePath));
+        return acc;
+    }, []);
+    const imageProfiles = entries.results.map(entry => entry.image_url as string);
+    const bucketKeys = [...imagePaths, ...imageProfiles].map(url =>
+        extractKeyFromURL(url)
+    ).filter(key => key !== null);
+
+    const {error} = await tryCatch(bucket.delete(bucketKeys));
+
+    if (error) {
+        console.log(error);
+        throw new Error('Error deleting images from bucket');
+    }
+
+    const deleteEntry = 
+        db.prepare(`DELETE FROM entry WHERE item_id IN (?)`)
+        .bind(ids);
+    const deleteEntryTags = 
+        db.prepare(`DELETE FROM item_tag WHERE item_id IN (?)`)
+        .bind(ids);
+
+    await db.batch([deleteEntry, deleteEntryTags]);
+    await db.prepare(`DELETE FROM item WHERE id IN (?)`).bind(ids).run();
+}
+
+async function deleteImages(
+    db: D1Database,
+    bucket: R2Bucket,
+    itemIds: number[]
+): Promise<void> {
+    const ids = itemIds.join(', ');
+    
+    const images = await db.prepare(`
+        SELECT file_path FROM image WHERE item_id IN (?)
+        `).bind(ids).all();
+    if (images.error) {
+        throw new Error('Error looking for images');
+    }
+
+    const imageFilePaths = images.results.map(image => image.file_path as string);
+    const bucketKeys = imageFilePaths.map(url =>
+        extractKeyFromURL(url)
+    ).filter(key => key !== null);
+
+    const {error} = await tryCatch(bucket.delete(bucketKeys));
+    
+    if (error) {
+        console.log(error);
+        throw new Error('Error deleting images from bucket');
+    }
+    
+    const deleteImage = 
+        db.prepare(`DELETE FROM image WHERE item_id IN (?)`)
+        .bind(ids);
+    const deleteImageTags = 
+        db.prepare(`DELETE FROM item_tag WHERE item_id IN (?)`)
+        .bind(ids);
+
+    await db.batch([deleteImage, deleteImageTags]);
+    await db.prepare(`DELETE FROM item WHERE id IN (?)`).bind(ids).run();
 }
 
 export async function searchItems(

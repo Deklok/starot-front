@@ -37,7 +37,8 @@
         const options = { 
             day: "numeric", 
             month: "long", 
-            year: "numeric"
+            year: "numeric",
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
         };
         // @ts-ignore
         return utcDate.toLocaleDateString("es", options);

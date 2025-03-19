@@ -6,3 +6,11 @@ export function formatStringForURL(input: string): string {
         .replace(/[\s]+/g, '-') // Replace spaces with hyphens
         .replace(/[-]+/g, '-'); // Replace multiple hyphens with a single hyphen
 }
+
+export function extractKeyFromURL(url: string): string | null {
+    const baseUrl = 'https://media.starot.net/';
+    if (url.startsWith(baseUrl)) {
+        return url.substring(baseUrl.length);
+    }
+    return null;
+}

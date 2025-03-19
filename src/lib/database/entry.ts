@@ -38,15 +38,6 @@ export async function getEntryIdByUniqueName(
     worldUniqueName: string
 ): Promise<number> {
     db = dbInput;
-    console.log('entryById query', 
-        `
-        SELECT id FROM entry
-        WHERE item_id in (
-            SELECT id FROM item WHERE unique_name = ${uniqueName} AND 
-            world_id = (SELECT id FROM world WHERE unique_name = ${worldUniqueName})
-        )
-        `
-    );
     const result = await db.prepare(`
         SELECT id FROM entry
         WHERE item_id in (
