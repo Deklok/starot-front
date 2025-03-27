@@ -19,7 +19,6 @@
 	export let isLoggedIn: boolean;
 	export let worlds: World[];
 	export let userWorlds: Folder[];
-	console.log('userWorlds', userWorlds);
 </script>
 
 <!-- Sidebar with fixed positioning and dark theme to match your screenshot -->

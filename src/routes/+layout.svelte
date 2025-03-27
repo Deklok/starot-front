@@ -2,10 +2,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import '../app.css';
-	import { Button, Navbar, NavBrand, Search } from 'flowbite-svelte';
+	import { Button, Dropdown, DropdownItem, Navbar, NavBrand, Search } from 'flowbite-svelte';
 	import { sidebarOpen } from '$lib/stores/sidebarStore';
 	import UserSideBar from '$lib/components/UserSideBar.svelte';
-	import { ArrowLeftOutline, BarsOutline, CloseOutline, PaperClipOutline, SearchOutline } from 'flowbite-svelte-icons';
+	import { ArrowLeftOutline, BarsOutline, ChevronDownOutline, CloseOutline, PaperClipOutline, SearchOutline } from 'flowbite-svelte-icons';
 	import { page } from '$app/state';
 	import Notification from '$lib/components/Notification.svelte';
 	import Loading from '$lib/components/Loading.svelte';
@@ -15,7 +15,6 @@
 	const username = $derived(page.data.username);
 	const isLoggedIn = $derived(page.data.isLoggedIn);
 	const worlds = $derived(page.data.worlds);
-	const userWorlds = $derived(page.data.userWorlds);
 	const folderWorldsStructure = $derived(page.data.folderWorldsStructure);
 
 	let query: string = $state(``);
@@ -43,14 +42,36 @@
 		};
 	});
 
-	function search() {
-		goto(`/search?query=${query}`);
-	}
+    let searchTerms: string[] = $state([]);
+    let currentInput: string = $state('');
+
+    // Modified search function to handle multiple terms
+    function search() {
+        if (searchTerms.length === 0) {
+			goto(`/search?query=${currentInput}`);
+		} else {
+			const queryString = searchTerms.join(',');
+			goto(`/search?tags=${queryString}`);
+		}
+    }
+
+    // Add new term from input
+    function addSearchTerm(event: KeyboardEvent) {
+        if (event.key === 'Enter' && currentInput.trim()) {
+            searchTerms = [...searchTerms, currentInput.trim()];
+            currentInput = '';
+        }
+    }
+
+    // Remove term
+    function removeSearchTerm(index: number) {
+        searchTerms = searchTerms.filter((_, i) => i !== index);
+    }
 
 	// Smart back button handler
 	function handleBack() {
 		history.back();
-	}
+	}	
 </script>
 
 <div class="flex h-screen overflow-hidden" data-sveltekit-preload-data="false">
@@ -76,10 +97,23 @@
 			</div>
 
 			<div class="flex self-center w-1/2">
-				<Search size="md" class="rounded-lg py-2.5" bind:value={query}
-				placeholder="Buscar..." />
+				<div class="flex flex-wrap items-center gap-2 bg-white rounded-lg p-2 flex-1">
+					{#each searchTerms as term, index}
+						<span class="bg-slate-200 px-2 py-1 rounded-full text-sm flex items-center gap-1">
+							{term}
+							<button class="hover:text-red-500" onclick={() => removeSearchTerm(index)}>×</button>
+						</span>
+					{/each}
+					<input
+						type="text"
+						class="flex-1 outline-none min-w-[100px]"
+						bind:value={currentInput}
+						onkeydown={addSearchTerm}
+						placeholder="Buscar..."
+					/>
+				</div>
 				<Button onclick={search}
-				class="p-2.5! rounded-lg" color="dark">
+					class="p-2.5! rounded-lg rounded-s-none" color="dark">
 					<SearchOutline class="w-6 h-6" />
 				</Button>
 			</div>

@@ -74,7 +74,9 @@
 			{
 				id: 0,
 				children: [],
-				name: 'Raiz'
+				name: 'Raiz',
+				uniqueName: '',
+				parentId: 0
 			}
 		];
 		const result = await fetch(`/${worldUniqueName}/folders`);
