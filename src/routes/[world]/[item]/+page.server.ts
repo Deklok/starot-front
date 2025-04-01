@@ -11,7 +11,7 @@ import { getWorldByUniqueName } from "$lib/database/world";
 import { formatStringForURL } from "$lib/utils/formatUrl";
 import { uploadFile } from "$lib/images/r2";
 import { isLoading } from "$lib/stores/loading";
-import { currentItem } from "$lib/stores/item";
+import { itemId } from "$lib/stores/item";
 import { tryCatch } from "$lib/utils/trycatch";
 
 export const load: PageServerLoad = async ({ params, url, platform, locals }) => {
@@ -37,7 +37,7 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
     const typeItem = url.searchParams.get('type') || 'entry';
     const parentIdParam = url.searchParams.get('parentId');
     let parentId = (parentIdParam) ? Number(parentIdParam) : undefined;
-    let itemId: number;
+    let currentItemId: number;
 
     let finalResponse;
     switch(typeItem) {
@@ -49,8 +49,7 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
                 'folder',
                 parentId
             );
-            itemId = currentFolder.id;
-            currentItem.set(currentFolder);
+            currentItemId = currentFolder.id;
             const folderTags = await getItemTags(DB, currentFolder.id);
             const folderItems = await getFolderItems(
                 DB, 
@@ -117,8 +116,7 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
                 'image',
                 parentId
             );
-            currentItem.set(currentImage);
-            itemId = currentImage.id;
+            currentItemId = currentImage.id;
             const imageUrl = await getImageForItem(DB, currentImage.id);
             const imageTags = await getItemTags(DB, currentImage.id);
             const imageData: ImageResponseData = {
@@ -140,8 +138,7 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
                 'entry',
                 parentId
             );
-            currentItem.set(currentEntry);
-            itemId = currentEntry.id;
+            currentItemId = currentEntry.id;
             const entryTags = await getItemTags(DB, currentEntry.id);
             const entry = await getEntry(
                 DB,
@@ -173,12 +170,12 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
             break;
 
         default:
-            itemId = -1;
+            currentItemId = -1;
             break;
     }
     isLoading.set(false);
 
-    if (itemId < 0) {
+    if (currentItemId < 0) {
         throw new Error('Item found but not valid');
     }
     
@@ -194,15 +191,15 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
     console.log({
         finalResponse
     });
-    return {...finalResponse, type: typeItem, canEdit, itemId };
+    return {...finalResponse, type: typeItem, canEdit, itemId: currentItemId };
 }
 
 export const actions: Actions = {
     newFolder: async ({ request, platform, locals }) => {
         const world = get(currentWorld);
-        const currentItemLocal = get(currentItem);
+        const currentItemIdLocal = get(itemId);
 
-        if (!world || !locals.userId || !currentItemLocal) {
+        if (!world || !locals.userId || !currentItemIdLocal) {
             throw new Error('necessary variables not set on action');
         }
 
@@ -222,22 +219,22 @@ export const actions: Actions = {
         const folderUniqueName = formatStringForURL(newFolderName);
         const tags = JSON.parse(data.get('tags') as string || '[]');
 
-        const itemId = await createItem(DB, {
+        const newItemId = await createItem(DB, {
             name: newFolderName,
             uniqueName: folderUniqueName,
             type: 'folder',
             worldId: world.id,
-            parentId: currentItemLocal.id
+            parentId: currentItemIdLocal
         });
-        await associateTagsToItem(DB, itemId, tags.map((tag: any) => tag.name ));
+        await associateTagsToItem(DB, newItemId, tags.map((tag: any) => tag.name ));
         
         return { success: true };
     },
     newImage: async ({ request, platform, locals }) => {
         const world = get(currentWorld);
-        const currentItemLocal = get(currentItem);
+        const currentItemIdLocal = get(itemId);
 
-        if (world === null || !locals.userId || !currentItemLocal) {
+        if (world === null || !locals.userId || !currentItemIdLocal) {
             throw new Error('necessary variables not set on action');
         }
 
@@ -258,29 +255,29 @@ export const actions: Actions = {
         const tags = JSON.parse(data.get('tags') as string || '[]');
         const imgFile = data.get('image') as File;
         const r2Key = 
-        `${world.uniqueName}/${currentItemLocal.id}_${imageUniqueName}`;
+        `${world.uniqueName}/${currentItemIdLocal}_${imageUniqueName}`;
         
         const finalImagePath = await uploadFile(R2BUCKET, r2Key, imgFile);
 
-        const itemId = await createItem(DB, {
+        const newItemId = await createItem(DB, {
             name: imageName,
             uniqueName: imageUniqueName,
             type: 'image',
             worldId: world.id,
-            parentId: currentItemLocal.id
+            parentId: currentItemIdLocal
         });
 
-        await associateTagsToItem(DB, itemId, tags.map((tag: any) => tag.name ));
+        await associateTagsToItem(DB, newItemId, tags.map((tag: any) => tag.name ));
 
-        await createImage(DB, itemId, finalImagePath);
+        await createImage(DB, newItemId, finalImagePath);
 
         return { success: true }
     },
     updateTags: async ({ request, platform, locals }) => {
         const world = get(currentWorld);
-        const currentItemLocal = get(currentItem);
+        const currentItemIdLocal = get(itemId);
 
-        if (world === null || !locals.userId || !currentItemLocal) {
+        if (world === null || !locals.userId || !currentItemIdLocal) {
             throw new Error('necessary variables not set on action');
         }
 
@@ -297,7 +294,7 @@ export const actions: Actions = {
         const data = await request.formData();
         const tags = JSON.parse(data.get('tags') as string || '[]');
 
-        await updateItemTags(DB, currentItemLocal.id, tags.map((tag: any) => tag.name ));
+        await updateItemTags(DB, currentItemIdLocal, tags.map((tag: any) => tag.name ));
 
         return { success: true }
     },

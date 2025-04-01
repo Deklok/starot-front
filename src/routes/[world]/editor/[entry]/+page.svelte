@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-  <title> Editor - {loadedData.name} </title>
+  <title> Editor - {loadedData.entryData.name} </title>
 </svelte:head>
 <div>
     <EntryEditor {...loadedData}></EntryEditor>

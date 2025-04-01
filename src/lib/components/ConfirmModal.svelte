@@ -6,6 +6,7 @@
     export let confirmText = "Si, de una";
     export let cancelText = "No, me mame";
     export let onConfirm = () => {};
+    export let onCancel = () => {};
     export let autoclose = true;
     export let customClass = "";
 </script>
@@ -19,6 +20,6 @@
     
     <svelte:fragment slot="footer">
         <Button color="dark" onclick={onConfirm}>{confirmText}</Button>
-        <Button color="red">{cancelText}</Button>
+        <Button color="red" onclick={onCancel}>{cancelText}</Button>
     </svelte:fragment>
 </Modal>

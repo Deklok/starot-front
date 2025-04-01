@@ -185,54 +185,70 @@
 	}
 
 	/* Backup functions */
+	let backupModal = $state(false);
+	let backupDate = $state('');
+
+
 	function backupEntry() {
 		try {
-			localStorage.setItem('backup_profile_sections', JSON.stringify(parsedProfileSections));
-        	localStorage.setItem('backup_sections', JSON.stringify(parsedSections));
-        	localStorage.setItem('backup_timestamp', new Date().toISOString());
+			// Add entry identifier to backup keys
+			const backupKey = `backup_${entryUniqueName || 'new'}_`;
+			localStorage.setItem(backupKey + 'profile_sections', JSON.stringify(parsedProfileSections));
+			localStorage.setItem(backupKey + 'sections', JSON.stringify(parsedSections));
+			localStorage.setItem(backupKey + 'timestamp', new Date().toISOString());
 		} catch (e: any) {
 			console.error('Error saving backup', e);
 		}
 	}
 
 	function clearBackup() {
-		localStorage.removeItem('backup_profile_sections');
-		localStorage.removeItem('backup_sections');
-		localStorage.removeItem('backup_timestamp');
+		// Clear only backups for this entry
+		const backupKey = `backup_${entryUniqueName || 'new'}_`;
+		localStorage.removeItem(backupKey + 'profile_sections');
+		localStorage.removeItem(backupKey + 'sections');
+		localStorage.removeItem(backupKey + 'timestamp');
 	}
 
 	function checkForBackup() {
 		try {
-			const backupProfileSections = localStorage.getItem('backup_profile_sections');
-			const backupSections = localStorage.getItem('backup_sections');
-			const backupTimestamp = localStorage.getItem('backup_timestamp');
+			// Check backups specific to this entry
+			const backupKey = `backup_${entryUniqueName || 'new'}_`;
+			const backupProfileSections = localStorage.getItem(backupKey + 'profile_sections');
+			const backupSections = localStorage.getItem(backupKey + 'sections');
+			const backupTimestamp = localStorage.getItem(backupKey + 'timestamp');
 			
 			if (backupProfileSections && backupSections && backupTimestamp) {
 				if (
 					backupSections !== JSON.stringify(parsedSections) ||
 					backupProfileSections !== JSON.stringify(parsedProfileSections)
 				) {
-					// You might want to confirm with the user before restoring
-					const shouldRestore = confirm(
-						`Se encontró un backup diferente del ${new Date(backupTimestamp).toLocaleString()}. ¿Quieres recuperarlo?`
-					);
-					
-					if (shouldRestore) {
-						parsedProfileSections = JSON.parse(backupProfileSections);
-						parsedSections = JSON.parse(backupSections);
-						notification.open('Backup data restored');
-					} else {
-						// Clear backup if user doesn't want to restore
-						clearBackup();
-					}
+					// logic to show dialog
+					backupModal = true;
+					backupDate = new Date(backupTimestamp).toLocaleString('es-AR', {
+						year: 'numeric',
+						month: '2-digit',
+						day: '2-digit',
+						hour: '2-digit',
+						minute: '2-digit'
+					});
 				} else {
-					// Clear backup if data is saved
 					clearBackup();
 				}
 			}
 		} catch (e) {
 			console.error('Failed to restore from backup:', e);
 		}
+	}
+
+	function restoreEntry() {
+		// Check backups specific to this entry
+		const backupKey = `backup_${entryUniqueName || 'new'}_`;
+		const backupProfileSections = localStorage.getItem(backupKey + 'profile_sections');
+		const backupSections = localStorage.getItem(backupKey + 'sections');
+		
+		parsedProfileSections = JSON.parse(backupProfileSections as string);
+		parsedSections = JSON.parse(backupSections as string);
+		notification.open('Backup data restored');
 	}
 
 	// Call this when component is mounted
@@ -425,4 +441,21 @@
         ESTAS TOTALMENTE SEGURX DE QUE NO ES UN MELTDOWN Y ESTAS EN TODAS TUS FUCKING CAPACIDADES
         MENTALES DE TOMAR ESTA DECISION??????????
     </p>
+</ConfirmModal>
+
+<ConfirmModal
+	title="Recuperar backup"
+	customClass="max-h-[90vh]"
+	bind:open={backupModal}
+	autoclose
+	confirmText="Recuperar backup"
+	onConfirm={() => restoreEntry()}
+	onCancel={() => {
+		clearBackup();
+		backupModal = false;
+	}}
+>
+	<p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+		Se encontro un backup del articulo guardado el <b>{backupDate}</b>. Quieres recuperarlo?
+	</p>
 </ConfirmModal>
