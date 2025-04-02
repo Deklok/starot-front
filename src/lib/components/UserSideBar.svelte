@@ -9,6 +9,7 @@
 		SidebarWrapper
 	} from 'flowbite-svelte';
 	import {
+		CloseOutline,
 		GlobeSolid,
 		HomeSolid
 	} from 'flowbite-svelte-icons';
@@ -27,8 +28,9 @@
            {$sidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full w-0 md:w-0'}">
 	<FlowbiteSidebar class="h-full">
 		<SidebarWrapper class="!bg-slate-800 text-white h-full">
+			
 			<!-- User Profile Section -->
-			<div class="p-4 border-gray-700">
+			<div class="p-4 border-gray-700 flex items-center justify-between">
 				<div class="flex items-center space-x-4">
 					<div class="font-medium">
 						<div class="text-white text-2xl">{username}</div>
@@ -37,6 +39,11 @@
 						{/if}
 					</div>
 				</div>
+				<Button onclick={() => ($sidebarOpen = false)} 
+					color="dark" size="lg" 
+					class="text-white hover:bg-slate-600 cursor-pointer">
+					<CloseOutline size="lg" />
+				</Button>
 			</div>
 			
 			<!-- Sidebar Navigation -->

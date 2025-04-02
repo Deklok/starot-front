@@ -3,8 +3,7 @@
 	import ImageFileDrop from '$lib/components/ImageFileDrop.svelte';
 	import {
 		Button,
-		FloatingLabelInput,
-		Modal
+		FloatingLabelInput
 	} from 'flowbite-svelte';
 	import { BarsOutline, CircleMinusSolid, CirclePlusSolid } from 'flowbite-svelte-icons';
 	import DraggableGallery, {
@@ -167,8 +166,11 @@
 		const finalUrl = (parentId)
 		? `/${worldUniqueName}/${entryUniqueName}?parentId=${parentId}`
 		: `/${worldUniqueName}/${entryUniqueName}`
-		
-		goto(finalUrl);
+    
+		// Navigate to entry view
+		goto(finalUrl, {
+			replaceState: true // This replaces instead of pushing to history
+		});
 	}
 
 	const beginDeleteCharacter = () => {

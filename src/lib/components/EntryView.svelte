@@ -4,6 +4,7 @@
 	import { Badge, Button, Card, Carousel, Modal, Table, TableBody, TableBodyCell, TableBodyRow, Thumbnails } from 'flowbite-svelte';
 	import { EditOutline } from 'flowbite-svelte-icons';
 	import MarkDown from './MarkDown.svelte';
+	import { goto } from '$app/navigation';
 
     let props = $props();
     
@@ -46,6 +47,10 @@
 
     const itemRoute = page.url.href.split('/');
     const editLink = `/${itemRoute[3]}/editor/${itemRoute[4]}`;
+
+    function goToEdit() {
+        goto(editLink, { replaceState: true });
+    }
 </script>
 
 <Modal classDialog="justify-self-center"
@@ -69,7 +74,8 @@ title="Galeria" bind:open={showModal} autoclose outsideclose>
         <div class="prose lg:prose-xl text-white container">
             <h1 class="text-4xl font-bold mb-4">{name}
                 {#if canEdit}
-                    <Button class="mx-2" href={editLink} color="dark">
+                    <Button class="mx-2 cursor-pointer" 
+                    onclick={goToEdit} color="dark">
                         <EditOutline></EditOutline>
                     </Button>
                 {/if}

@@ -2,10 +2,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import '../app.css';
-	import { Button, Dropdown, DropdownItem, Navbar, NavBrand, Search } from 'flowbite-svelte';
+	import { Button, Navbar, NavBrand } from 'flowbite-svelte';
 	import { sidebarOpen } from '$lib/stores/sidebarStore';
 	import UserSideBar from '$lib/components/UserSideBar.svelte';
-	import { ArrowLeftOutline, BarsOutline, ChevronDownOutline, CloseOutline, PaperClipOutline, SearchOutline } from 'flowbite-svelte-icons';
+	import { ArrowLeftOutline, BarsOutline, PaperClipOutline, SearchOutline } from 'flowbite-svelte-icons';
 	import { page } from '$app/state';
 	import Notification from '$lib/components/Notification.svelte';
 	import Loading from '$lib/components/Loading.svelte';
@@ -16,8 +16,6 @@
 	const isLoggedIn = $derived(page.data.isLoggedIn);
 	const worlds = $derived(page.data.worlds);
 	const folderWorldsStructure = $derived(page.data.folderWorldsStructure);
-
-	let query: string = $state(``);
 	
 	// Toggle sidebar function
 	function toggleSidebar() {
@@ -84,12 +82,15 @@
 		<Navbar class="!bg-slate-800">
 			<div class="flex items-center">
 				<!-- Toggle button with appropriate icon -->
-				<Button class="mr-2" pill size="sm" color="dark" onclick={toggleSidebar}>
-					{#if $sidebarOpen}
-						<CloseOutline></CloseOutline>
-					{:else}
+				{#if !$sidebarOpen}
+					<Button class="mr-2" pill size="sm" color="dark" onclick={toggleSidebar}>
 						<BarsOutline></BarsOutline>
-					{/if}
+					</Button>
+				{/if}
+				<Button color="dark" class="mr-2"
+				onclick={handleBack} size="lg">
+					<ArrowLeftOutline size="lg"
+					></ArrowLeftOutline>
 				</Button>
 				<NavBrand href="/">
 					<span class="self-center whitespace-nowrap text-xl font-semibold text-white">Starot Wiki</span>
@@ -128,13 +129,6 @@
 
 		<main class="flex-1 overflow-y-auto p-4 bg-slate-900">
 			<div class="bg-slate-700 rounded-lg m-2 p-6">
-				{#if page.url.pathname !== '/'}
-					<Button color="dark" class="mb-8"
-					onclick={handleBack}>
-						<ArrowLeftOutline
-						></ArrowLeftOutline>
-					</Button>
-				{/if}
 				<slot {isLoggedIn} />
 			</div>
 		</main>
