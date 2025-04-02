@@ -37,7 +37,6 @@ export async function getItem(
         WHERE item.unique_name = ? AND
         world.unique_name = ? AND
         item.type = ?
-        ORDER BY item.name ASC
     `;
 
     const bindings: (string | number)[] = [itemUniqueName, worldUniqueName, itemType];
@@ -46,6 +45,8 @@ export async function getItem(
         query += ` AND item.parent_id = ?`;
         bindings.push(parentId);
     }
+
+    query += ` ORDER BY item.name ASC`;
 
     const result = await db.prepare(query)
         .bind(...bindings)

@@ -331,7 +331,8 @@
 			{#each entries as entry}
 				<Card
 					href={entry.url}
-					class="relative m-3 w-[250px] h-[350px] flex flex-col overflow-hidden"
+					class="relative m-3 w-[250px] h-[300px] rounded-2xl
+					flex flex-col overflow-hidden"
 					oncontextmenu={(e) => handleContextMenu(e, entry)}
 				>
 				<div class="h-[200px] w-full overflow-hidden">
@@ -341,14 +342,14 @@
 						class="h-full w-full object-cover object-top rounded-xl"
 					/>
 				</div>
-				<div class="flex-1 p-4">
-					<div class="text-2xl line-clamp-2">{entry.name}</div>
+				<div class="flex-1 p-1 mt-3 text-center">
+					<div class="text-2xl line-clamp-2 justify-self-center">{entry.name}</div>
 				</div>
 					{#if canEdit}
 					<div class="absolute right-1 bottom-3 flex w-fit justify-end">
 						<Button
 							onclick={(e: any) => handleContextMenu(e, entry)}
-							class="cursor-pointer p-2 hover:bg-slate-800"
+							class="cursor-pointer p-1 hover:bg-slate-800"
 						>
 							<DotsVerticalOutline size="xl"></DotsVerticalOutline>
 						</Button>
