@@ -60,6 +60,7 @@ export async function getWorldItems(
         LEFT OUTER JOIN image on image.item_id = item.id
         LEFT OUTER JOIN entry on entry.item_id = item.id
         WHERE world_id = ? AND parent_id IS NULL
+        ORDER BY item.name ASC
     `).bind(id).all();
 
     const items = results.results;

@@ -331,13 +331,19 @@
 			{#each entries as entry}
 				<Card
 					href={entry.url}
-					img={entry.preview}
-					class="relative
-					m-3 flex w-[15rem] flex-col items-center
-					justify-center"
+					class="relative m-3 w-[250px] h-[350px] flex flex-col overflow-hidden"
 					oncontextmenu={(e) => handleContextMenu(e, entry)}
 				>
-					<div class="mt-2 text-2xl w-fit">{entry.name}</div>
+				<div class="h-[200px] w-full overflow-hidden">
+					<img
+						src={entry.preview}
+						alt={entry.name}
+						class="h-full w-full object-cover object-top rounded-xl"
+					/>
+				</div>
+				<div class="flex-1 p-4">
+					<div class="text-2xl line-clamp-2">{entry.name}</div>
+				</div>
 					{#if canEdit}
 					<div class="absolute right-1 bottom-3 flex w-fit justify-end">
 						<Button

@@ -37,6 +37,7 @@ export async function getItem(
         WHERE item.unique_name = ? AND
         world.unique_name = ? AND
         item.type = ?
+        ORDER BY item.name ASC
     `;
 
     const bindings: (string | number)[] = [itemUniqueName, worldUniqueName, itemType];
@@ -265,6 +266,9 @@ export async function searchItems(
     if (conditions.length > 0) {
         query += ` WHERE ${conditions.join(' AND ')}`;
     }
+
+    // Add ORDER BY name
+    query += ` ORDER BY item.name ASC`;
     
     // Add limit and offset
     if (options.limit !== undefined) {
