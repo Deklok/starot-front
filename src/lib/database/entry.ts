@@ -1,3 +1,5 @@
+import { formatStringForURL } from "$lib/utils/formatUrl";
+import { replaceEntryUniqueNameInUrl } from "$lib/utils/stringFormat";
 import { transformToCamelCase } from "$lib/utils/underToCamelCase";
 import type { D1Database } from "@cloudflare/workers-types";
 
@@ -99,9 +101,44 @@ export async function updateEntry(
 
     await db.prepare(`
         UPDATE item
-        SET name = ?
+        SET name = ?, unique_name = ?
         WHERE id = (
             SELECT item_id FROM entry WHERE id = ?
-    )`).bind(entry.name, entryId).run();
+    )`).bind(entry.name, formatStringForURL(entry.name), entryId).run();
     
+}
+
+export async function updateEntryUniqueNameByItemId(
+    dbInput: D1Database,
+    uniqueName: string,
+    itemId: number
+): Promise<void> {
+    db = dbInput;
+    const entry = await getEntry(db, itemId);
+
+    let mainImageUrl: string = entry.imageUrl;
+    let imagesUrl = entry.images;
+
+    if (entry.imageUrl.includes('https://')) {
+        mainImageUrl = replaceEntryUniqueNameInUrl(
+            entry.imageUrl,
+            uniqueName
+        );
+    }
+
+    if (entry.images.length > 0) {
+        imagesUrl = entry.images.map((image) => ({
+            ...image,
+            filePath: replaceEntryUniqueNameInUrl(image.filePath, uniqueName)
+        }));
+    }
+
+    console.log('mainImageUrl', mainImageUrl);
+    console.log('imagesUrl', imagesUrl);
+
+    await db.prepare(`
+        UPDATE entry
+        SET image_url = ?, images = ?
+        WHERE item_id = ?
+    `).bind(mainImageUrl, JSON.stringify(imagesUrl), itemId).run();
 }

@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@plugin 'flowbite/plugin';
+
+@source "../node_modules/flowbite-svelte/dist";
+
 .section-html li[data-list="bullet"] {
     list-style-type: disc;
     display: list-item;

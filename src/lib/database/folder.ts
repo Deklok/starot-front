@@ -31,6 +31,7 @@ export async function getFolderItems(
         WHERE 
         world_id = ? AND 
         parent_id = ?
+        ORDER BY item.name ASC
     `).bind(worldId, id).all();
 
     const items = results.results;

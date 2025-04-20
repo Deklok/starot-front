@@ -156,9 +156,7 @@
 		clearBackup();
 
 		let worldUniqueName = page.params.world;
-		let entryUniqueName = (page.params.entry)
-			? page.params.entry
-			: formatStringForURL(entryName);
+		let entryUniqueName = formatStringForURL(entryName);
 		
 			let parentQuery = page.url.searchParams.get('parentId');
 		const parentId = (parentQuery) ? Number(parentQuery) : undefined;

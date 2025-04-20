@@ -6,9 +6,11 @@ import { getItem } from "$lib/database/item";
 import { getEntry, updateEntry } from "$lib/database/entry";
 import { getItemTags, updateItemTags } from "$lib/database/tags";
 import { error, type Actions } from "@sveltejs/kit";
-import { uploadFile } from "$lib/images/r2";
+import { renameEntryFiles, uploadFile } from "$lib/images/r2";
 import { generateRandomId } from "$lib/utils/randomId";
 import { entryId, itemId } from "$lib/stores/item";
+import { formatStringForURL } from "$lib/utils/formatUrl";
+import { replaceEntryUniqueNameInUrl } from "$lib/utils/stringFormat";
 
 export const load: PageServerLoad = async ({ params, url, platform, locals }) => {
     const worldUniqueName = params.world;
@@ -115,7 +117,13 @@ export const actions: Actions = {
         }
 
         const entryUniqueName: string = params.entry as string;
+        let uniqueNameFromName = formatStringForURL(name);
         let mainEntryImage: string = '';
+
+        console.log({
+            entryUniqueName,
+            uniqueNameFromName
+        });
 
         await updateItemTags(DB, currentItemId, tags.map((tag: any) => tag.name ));
 
@@ -128,10 +136,13 @@ export const actions: Actions = {
             );
         } else {
             mainEntryImage = imgFile as string;
+            if (uniqueNameFromName !== entryUniqueName) {
+                mainEntryImage = replaceEntryUniqueNameInUrl(mainEntryImage, uniqueNameFromName);
+            }
         }
 
         let entryImagesUrl: string[] = [];
-        await Promise.all(entryImages.map(async (image, index) => {
+        await Promise.all(entryImages.map(async (image) => {
             if (image instanceof File) {
                 const imgUrl = await uploadFile(
                     R2BUCKET,
@@ -140,9 +151,37 @@ export const actions: Actions = {
                 );
                 entryImagesUrl.push(imgUrl);
             } else if (typeof image === 'string') {
-                entryImagesUrl.push(image);
+                entryImagesUrl.push(
+                    (uniqueNameFromName !== entryUniqueName) 
+                    ? replaceEntryUniqueNameInUrl(image, uniqueNameFromName)
+                    : image
+                );
             }
         }));
+
+        if (uniqueNameFromName !== entryUniqueName) {
+            await renameEntryFiles(
+                R2BUCKET, 
+                `${world.uniqueName}/${entryUniqueName}`,
+                `${world.uniqueName}/${uniqueNameFromName}`
+            );
+        }
+
+        console.log({
+            name,
+            image: mainEntryImage,
+            attributes: profileSections.map((a: any) => ({
+                label: a.label,
+                value: a.value
+            })),
+            images: entryImagesUrl.map((img) => ({
+                filePath: img
+            })),
+            sections: sections.map((s: any) => ({
+                title: s.title,
+                content: s.content
+            }))
+        });
 
         await updateEntry(DB, currentEntryId, {
             name,

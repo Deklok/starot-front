@@ -24,6 +24,21 @@ export async function createItem(
     return result.meta.last_row_id;
 }
 
+export async function getItemById(
+    db: D1Database,
+    id: number
+): Promise<Item> {
+    const result = await db.prepare(`SELECT * FROM item WHERE id = ?`)
+        .bind(id)
+        .first();
+
+    if (!result) {
+        throw new Error('Item not found');
+    }
+
+    return transformToCamelCase<Item>(result);
+}
+
 export async function getItem(
     db: D1Database,
     worldUniqueName: string,

@@ -1,8 +1,8 @@
 import { getWorldByUniqueName, getWorldItems } from "$lib/database/world";
 import type { Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import { uploadFile } from "$lib/images/r2";
-import { createItem } from "$lib/database/item";
+import { renameEntryFiles, uploadFile } from "$lib/images/r2";
+import { createItem, getItem, getItemById } from "$lib/database/item";
 import { formatStringForURL } from "$lib/utils/formatUrl";
 import { createImage } from "$lib/database/image";
 import { associateTagsToItem } from "$lib/database/tags";
@@ -10,6 +10,8 @@ import { currentWorld } from "$lib/stores/world";
 import { get } from "svelte/store";
 import { isLoading } from "$lib/stores/loading";
 import { tryCatch } from "$lib/utils/trycatch";
+import { generateRandomId } from "$lib/utils/randomId";
+import { getEntry, updateEntryUniqueNameByItemId } from "$lib/database/entry";
 
 export const load: PageServerLoad = async ({ params, platform, locals }) => {
     isLoading.set(true);
@@ -137,7 +139,7 @@ export const actions: Actions = {
         const tags = JSON.parse(data.get('tags') as string || '[]');
         const imgFile = data.get('image') as File;
         const r2Key =
-            `${world.uniqueName}/${imageUniqueName}`;
+            `${world.uniqueName}/${generateRandomId()}`;
 
         const finalImagePath = await uploadFile(R2BUCKET, r2Key, imgFile);
 
@@ -174,11 +176,25 @@ export const actions: Actions = {
 
         const data = await request.formData();
         const newName = data.get('name') as string;
+        const newUniqueName = formatStringForURL(newName);
         const itemId = Number(data.get('itemId') as string)
 
+        const item = await getItemById(DB, itemId);
+        console.log('item to rename', item);
+        
+        await renameEntryFiles(
+            platform.env.BUCKET, 
+            `${world.uniqueName}/${item.uniqueName}`,
+            `${world.uniqueName}/${newUniqueName}`
+        );
+
+        if (item.type === 'entry') {
+            await updateEntryUniqueNameByItemId(DB, newUniqueName, itemId)
+        }
+
         const { error } = await tryCatch(DB.prepare(`
-                UPDATE item SET name = ? WHERE id = ?
-            `).bind(newName, itemId).run());
+                UPDATE item SET name = ?, unique_name = ? WHERE id = ?
+            `).bind(newName, newUniqueName, itemId).run());
         
         if (error) {
             throw new Error('error on update name');
