@@ -63,7 +63,8 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
             tags: []
         })),
         sections: entry.sections,
-        updatedAt: entry.updatedAt
+        updatedAt: entry.updatedAt,
+        published: entry.published
     } as EntryViewData;
 
     return {
@@ -101,6 +102,7 @@ export const actions: Actions = {
         const data = await request.formData();
 
         const name = data.get('name') as string;
+        const published = data.get('published') === 'true';
         const tags = JSON.parse(data.get('tags') as string || '[]');
         const imgFile = data.get('image');
         const profileSections = JSON.parse(data.get('profile_sections') as string || '[]');
@@ -152,7 +154,7 @@ export const actions: Actions = {
                 entryImagesUrl.push(imgUrl);
             } else if (typeof image === 'string') {
                 entryImagesUrl.push(
-                    (uniqueNameFromName !== entryUniqueName) 
+                    (uniqueNameFromName !== entryUniqueName && image !== '/default.png') 
                     ? replaceEntryUniqueNameInUrl(image, uniqueNameFromName)
                     : image
                 );
@@ -196,7 +198,8 @@ export const actions: Actions = {
             sections: sections.map((s: any) => ({
                 title: s.title,
                 content: s.content
-            }))
+            })),
+            published
         });  
         
         return { sucess: true }

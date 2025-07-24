@@ -16,6 +16,7 @@
     let entryImage = $derived(props.entryImage || page.data.entryImage);
     let canEdit = $derived(props.canEdit || page.data.canEdit || false);
     let updatedAt = $derived(props.updatedAt || page.data.updatedAt);
+    let published = $derived(props.published || page.data.published || false);
     
     const carouselImages = images.map((image: any) => ({
         alt: image.name,
@@ -82,6 +83,9 @@ title="Galeria" bind:open={showModal} autoclose outsideclose>
             </h1>
             <div class="text-slate-400">
                 Ultima actualización: {convertUtcToLocal(updatedAt)}
+                {#if canEdit}
+                    <br> <b>Publicado:</b> {(published) ? 'Yassss' : 'Nel'}
+                {/if}
             </div>
             {#each tags as tag}
                 <Badge class="mx-2 mt-6 mb-6" href={tag.url} large color="dark" border>

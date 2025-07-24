@@ -27,6 +27,11 @@ export const renameEntryFiles = async (
     oldEntryRoute: string,
     newEntryRoute: string
 ): Promise<void> => {
+    console.log({
+        oldEntryRoute,
+        newEntryRoute
+    });
+    
     const objectsToRename: {
         oldKey: string;
         newKey: string;
@@ -59,10 +64,12 @@ export const renameEntryFiles = async (
             throw new Error(error.message);
         }
 
+        /* TODO: Check why deleting is deleting everything
         const { error: deleteError } = await tryCatch(r2.delete(object.key));
 
         if (deleteError) {
             throw new Error(deleteError.message);
         }
+            */
     }));
 }

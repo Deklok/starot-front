@@ -19,4 +19,5 @@ interface EntryRequest {
     attributes: EntryAttributeRequest[];
     images: EntryImageRequest[];
     sections: EntrySectionRequest[];
+    published: boolean;
 }

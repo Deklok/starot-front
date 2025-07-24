@@ -11,7 +11,7 @@ import { get } from "svelte/store";
 import { isLoading } from "$lib/stores/loading";
 import { tryCatch } from "$lib/utils/trycatch";
 import { generateRandomId } from "$lib/utils/randomId";
-import { getEntry, updateEntryUniqueNameByItemId } from "$lib/database/entry";
+import { updateEntryUniqueNameByItemId } from "$lib/database/entry";
 
 export const load: PageServerLoad = async ({ params, platform, locals }) => {
     isLoading.set(true);
@@ -31,7 +31,7 @@ export const load: PageServerLoad = async ({ params, platform, locals }) => {
     const canEdit = world.userId === locals.userId;
 
     const folders: LinkItem[] = [];
-    const entries: PreviewData[] = [];
+    const entries: EntryPreviewData[] = [];
     const images: PreviewData[] = [];
 
     worldItems.forEach(item => {
@@ -54,12 +54,15 @@ export const load: PageServerLoad = async ({ params, platform, locals }) => {
                 break;
 
             case 'entry':
-                entries.push({
-                    id: item.id,
-                    name: item.name,
-                    url: `${worldUniqueName}/${item.uniqueName}`,
-                    preview: item.entryPreview as string
-                });
+                if (item.published || canEdit) {
+                    entries.push({
+                        id: item.id,
+                        name: item.name,
+                        url: `${worldUniqueName}/${item.uniqueName}`,
+                        preview: item.entryPreview as string,
+                        published: item.published
+                    });
+                }
                 break;
 
             default:

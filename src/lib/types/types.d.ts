@@ -5,6 +5,10 @@ interface PreviewData {
     preview: string;
 }
 
+interface EntryPreviewData extends PreviewData {
+    published: boolean;
+}
+
 interface LinkItem {
     id: number;
     name: string;
@@ -43,6 +47,7 @@ interface EntryViewData {
     images: ImageResponseData[];
     sections: SimpleEntrySection[];
     updatedAt: string;
+    published: boolean;
 }
 
 interface SimpleItem {

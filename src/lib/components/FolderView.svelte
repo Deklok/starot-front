@@ -331,8 +331,7 @@
 			{#each entries as entry}
 				<Card
 					href={entry.url}
-					class="relative m-3 w-[250px] h-[300px] rounded-2xl
-					flex flex-col overflow-hidden"
+					class={`relative m-3 w-[250px] h-[300px] rounded-2xl flex flex-col overflow-hidden${!entry.published ? ' opacity-20' : ''}`}
 					oncontextmenu={(e) => handleContextMenu(e, entry)}
 				>
 				<div class="h-[200px] w-full overflow-hidden">

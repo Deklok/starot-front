@@ -25,7 +25,12 @@ export async function getFolderItems(
     id: number
 ): Promise<ItemWithPreview[]> {
     const results = await db.prepare(`
-        SELECT item.*, image.file_path as preview, entry.image_url as entryPreview FROM item
+        SELECT 
+            item.*, 
+            image.file_path as preview, 
+            entry.image_url as entryPreview,
+            entry.published as published
+        FROM item
         LEFT OUTER JOIN image on image.item_id = item.id
         LEFT OUTER JOIN entry on entry.item_id = item.id
         WHERE 

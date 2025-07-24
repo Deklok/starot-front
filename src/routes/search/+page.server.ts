@@ -41,19 +41,24 @@ export const load: PageServerLoad = async ({ url, platform }) => {
     }
 
     const DB = platform.env.DB;
-
     const searchTerm = url.searchParams.get('query');
-    const tags = url.searchParams.get('tags');
-    const finalTags = tags ? tags.split(',') : [];
-
-    const itemResults = await searchItems(
-        DB,
-        {
-            searchTerm: searchTerm ? searchTerm : undefined,
-            tags: finalTags
-        }
-    );
     
+    let itemResults: ItemSearchResult[] = [];
+    if (searchTerm) {
+        // Search by name
+        const nameResults = await searchItems(DB, { searchTerm });
+        // Search by tag
+        const tagResults = await searchItems(DB, { tags: [searchTerm] });
+        
+        // Combine results and remove duplicates
+        const allResults = [...nameResults, ...tagResults];
+        const uniqueResults = allResults.filter((item, index) => {
+            return index === allResults.findIndex(i => i.id === item.id);
+        });
+        
+        itemResults = uniqueResults;
+    }
+
     const results = orderByType(itemResults);
 
     return {

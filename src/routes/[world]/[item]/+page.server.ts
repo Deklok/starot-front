@@ -58,7 +58,7 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
             );
         
             const folders: LinkItem[] = [];
-            const entries: PreviewData[] = [];
+            const entries: EntryPreviewData[] = [];
             const images: PreviewData[] = [];
 
             folderItems.forEach(item => {
@@ -81,12 +81,15 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
                         break;
 
                     case 'entry':
-                        entries.push({
-                            id: item.id,
-                            name: item.name,
-                            url: `/${worldUniqueName}/${item.uniqueName}?parentId=${currentFolder.id}`,
-                            preview: item.entryPreview as string
-                        });
+                        if (item.published || canEdit) {
+                            entries.push({
+                                id: item.id,
+                                name: item.name,
+                                url: `/${worldUniqueName}/${item.uniqueName}?parentId=${currentFolder.id}`,
+                                preview: item.entryPreview as string,
+                                published: item.published
+                            });
+                        }
                         break;
 
                     default:
@@ -164,7 +167,8 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
                     title: sec.title,
                     content: sec.content
                 })),
-                updatedAt: entry.updatedAt || currentEntry.createdAt
+                updatedAt: entry.updatedAt || currentEntry.createdAt,
+                published: entry.published
             }
             finalResponse = entryData;
             break;

@@ -30,8 +30,9 @@ interface Item {
 }
 
 interface ItemWithPreview extends Item {
-    preview: string | null
-    entryPreview: string | null
+    preview: string | null;
+    entryPreview: string | null;
+    published: boolean;
 }
 
 interface ItemSearchResult extends ItemWithPreview {
@@ -73,7 +74,7 @@ interface Entry {
     images: EntryImage[];
     sections: EntrySection[];
     updatedAt: string;
-
+    published: boolean;
 }
 
 interface Tag {

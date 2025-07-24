@@ -10,8 +10,6 @@ export async function login(
         .bind(username)
         .first();
 
-
-
     if (!user) {
         return null;
     }

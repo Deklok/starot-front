@@ -64,15 +64,16 @@ export async function createEntry(
     db = dbInput;
     const result = await db.prepare(`
         INSERT INTO 
-        entry(item_id, name, image_url, attributes, images, sections) 
-        VALUES (?,?,?,?,?,?)
+        entry(item_id, name, image_url, attributes, images, sections, published) 
+        VALUES (?,?,?,?,?,?,?)
     `).bind(
         itemId, 
         entry.name, 
         entry.image,
         JSON.stringify(entry.attributes),
         JSON.stringify(entry.images),
-        JSON.stringify(entry.sections)
+        JSON.stringify(entry.sections),
+        entry.published
     ).run();
 
     if (!result.success) {
@@ -88,7 +89,7 @@ export async function updateEntry(
     db = dbInput;
     await db.prepare(`
         UPDATE entry
-        SET name = ?, image_url = ?, attributes = ?, images = ?, sections = ?
+        SET name = ?, image_url = ?, attributes = ?, images = ?, sections = ?, published = ?
         WHERE id = ?
     `).bind(
         entry.name,
@@ -96,6 +97,7 @@ export async function updateEntry(
         JSON.stringify(entry.attributes),
         JSON.stringify(entry.images),
         JSON.stringify(entry.sections),
+        entry.published,
         entryId
     ).run();
 

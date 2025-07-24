@@ -40,30 +40,20 @@
 		};
 	});
 
-    let searchTerms: string[] = $state([]);
     let currentInput: string = $state('');
 
-    // Modified search function to handle multiple terms
+    // Modified search function to handle single term
     function search() {
-        if (searchTerms.length === 0) {
-			goto(`/search?query=${currentInput}`);
-		} else {
-			const queryString = searchTerms.join(',');
-			goto(`/search?tags=${queryString}`);
-		}
-    }
-
-    // Add new term from input
-    function addSearchTerm(event: KeyboardEvent) {
-        if (event.key === 'Enter' && currentInput.trim()) {
-            searchTerms = [...searchTerms, currentInput.trim()];
-            currentInput = '';
+        if (currentInput.trim()) {
+            goto(`/search?query=${currentInput}`);
         }
     }
 
-    // Remove term
-    function removeSearchTerm(index: number) {
-        searchTerms = searchTerms.filter((_, i) => i !== index);
+    // Add new term from input
+    function handleSearch(event: KeyboardEvent) {
+        if (event.key === 'Enter' && currentInput.trim()) {
+            search();
+        }
     }
 
 	// Smart back button handler
@@ -99,17 +89,12 @@
 
 			<div class="flex self-center w-1/2">
 				<div class="flex flex-wrap items-center gap-2 bg-white rounded-lg p-2 flex-1">
-					{#each searchTerms as term, index}
-						<span class="bg-slate-200 px-2 py-1 rounded-full text-sm flex items-center gap-1">
-							{term}
-							<button class="hover:text-red-500" onclick={() => removeSearchTerm(index)}>×</button>
-						</span>
-					{/each}
 					<input
 						type="text"
-						class="flex-1 outline-none min-w-[100px]"
+						class="w-full text-gray-900
+						bg-transparent border-none"
 						bind:value={currentInput}
-						onkeydown={addSearchTerm}
+						onkeydown={handleSearch}
 						placeholder="Buscar..."
 					/>
 				</div>

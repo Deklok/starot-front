@@ -3,7 +3,8 @@
 	import ImageFileDrop from '$lib/components/ImageFileDrop.svelte';
 	import {
 		Button,
-		FloatingLabelInput
+		FloatingLabelInput,
+		Toggle
 	} from 'flowbite-svelte';
 	import { BarsOutline, CircleMinusSolid, CirclePlusSolid } from 'flowbite-svelte-icons';
 	import DraggableGallery, {
@@ -32,6 +33,7 @@
 
 	let selectedToRemove = $state(0);
 
+	let isPublished = $state(entryData.published || false);
 	let entryUniqueName = $state(uniqueName);
 	let entryName = $state(entryData.name);
 	let tags: CustomTag[] = $state(entryData.tags);
@@ -113,7 +115,7 @@
 		finalConfirmDeleteChat = true;
 	};
 
-	async function saveChanges() {
+	async function saveChanges(redirect: boolean = true) {
 		isLoading.set(true);
 		backupEntry();
 		const formData = new FormData();
@@ -123,6 +125,7 @@
 		}
 
 		formData.append(`name`, entryName);
+		formData.append(`published`, isPublished.toString());
 		formData.append(`tags`, JSON.stringify(tags));
 		if (imgFile) {
 			formData.append(`image`, imgFile);
@@ -158,12 +161,17 @@
 		let worldUniqueName = page.params.world;
 		let entryUniqueName = formatStringForURL(entryName);
 		
-			let parentQuery = page.url.searchParams.get('parentId');
+		let parentQuery = page.url.searchParams.get('parentId');
 		const parentId = (parentQuery) ? Number(parentQuery) : undefined;
 
+		
+		const editorPrefix = (redirect) ? '' : '/editor';
+		console.log('Editor prefix:', editorPrefix);
 		const finalUrl = (parentId)
-		? `/${worldUniqueName}/${entryUniqueName}?parentId=${parentId}`
-		: `/${worldUniqueName}/${entryUniqueName}`
+		? `/${worldUniqueName}${editorPrefix}/${entryUniqueName}?parentId=${parentId}`
+		: `/${worldUniqueName}${editorPrefix}/${entryUniqueName}`;
+
+		console.log('Final URL to navigate:', finalUrl);
     
 		// Navigate to entry view
 		goto(finalUrl, {
@@ -259,6 +267,20 @@
 
 <div class="flex">
 	<div class="m-4 flex w-full flex-col justify-center bg-slate-700 p-1 md:p-4">
+		<div class="flex justify-end">
+			<Toggle
+				bind:checked={isPublished}
+				on:change={() => saveChanges(false)}
+				size="large"
+				color="green"
+			>
+				{#if isPublished}
+					Publicado
+				{:else}
+					No publicado
+				{/if}
+			</Toggle>
+		</div>
 		<div class="mb-8 flex w-full flex-wrap">
 			<div class="w-full md:w-3/4">
 				<div class="flex flex-wrap justify-center text-2xl text-white">
@@ -383,7 +405,7 @@
 				color="green"
 				outline
 				pill
-				onclick={saveChanges}
+				onclick={() => saveChanges(true)}
 				size="lg"
 				class="!p2 mx-4 mt-8 w-fit self-center"
 			>
