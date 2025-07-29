@@ -125,6 +125,11 @@
 		}
 
 		formData.append(`name`, entryName);
+		if (entryName.length < 1) {
+			notification.open('El titulo no puede estar vacio', true);
+			isLoading.set(false);
+			return;
+		}
 		formData.append(`published`, isPublished.toString());
 		formData.append(`tags`, JSON.stringify(tags));
 		if (imgFile) {

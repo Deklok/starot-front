@@ -147,6 +147,11 @@ export const load: PageServerLoad = async ({ params, url, platform, locals }) =>
                 DB,
                 currentEntry.id
             );
+
+            if (!entry.published && !canEdit) {
+                redirect(302, '/private');
+            }
+
             const entryData: EntryViewData = {
                 name: entry.name,
                 entryImage: entry.imageUrl,
